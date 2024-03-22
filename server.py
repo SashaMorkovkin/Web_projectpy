@@ -1,13 +1,11 @@
 import os
 
-from flask import Flask, render_template, redirect, request, make_response, abort, url_for, session
-from data import db_session, new_api
+from flask import Flask, render_template, redirect, request, make_response, url_for
+from data import db_session
 import datetime as dt
 from forms.user import LoginForm, RegisterForm
 from data.users import User
 from data.category import Category
-from data.quezes import Quezes
-from data.questions import Questions
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 
