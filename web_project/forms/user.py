@@ -5,7 +5,7 @@ from sqlalchemy_serializer import SerializerMixin
 
 
 class LoginForm(FlaskForm):
-    name = StringField('Логин', validators=[DataRequired()])
+    email = EmailField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('запомнить меня')
     submit = SubmitField('Войти')

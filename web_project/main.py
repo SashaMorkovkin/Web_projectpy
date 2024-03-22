@@ -1,17 +1,16 @@
-from flask import Flask, render_template, redirect, request, make_response, abort, url_for
-from flask import session
+from flask import Flask, render_template, redirect, request, make_response, abort, url_for, session
 from data import db_session, new_api
-import datetime
 import datetime as dt
 from forms.user import LoginForm, RegisterForm
 from data.users import User
 from data.quezes import Quezes
 from data.questions import Questions
-from flask_login import LoginManager, login_user, login_required, logout_user
-from flask_login import current_user
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
-app.config['PERMANENT_SESSION_LIFETIME'] = dt.timedelta(days=1)
+app.config['PERMANENT_SESSION_LIFETIME'] = dt.timedelta(days=30)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -62,6 +61,7 @@ def register():
         user.set_password(form.password.data)
         db_sess.add(user)
         db_sess.commit()
+        login_user(user, remember=True)
         return redirect('/')
     return render_template('register.html', title='Регистрация',
                            form=form)
@@ -72,7 +72,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.name == form.name.data).first()
+        user = db_sess.query(User).filter(User.email == form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
@@ -89,9 +89,13 @@ def logout():
     return redirect("/")
 
 
-@app.route('/test')
-def test():
-    return render_template('test.html', title='ТЕст')
+@app.route('/gallery/<int:userid>')
+@app.route('/gallery/')
+def gallery(userid=0):
+    if userid:
+        return '123'
+    else:
+        return 'Для просмотра галереи надо авторизоваться'
 
 
 def main():

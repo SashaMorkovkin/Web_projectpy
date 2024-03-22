@@ -18,7 +18,7 @@
         IQuiz!
     </a>
     <p style="margin-bottom: 0px; margin-left: 5%" class="nav-item">
-        <a class="btn btn-menu" href="/login">Создать опрос</a>
+        <a class="btn btn-menu" href="/newquiz">Создать опрос</a>
     </p>
     <p style="margin-bottom: 0px; margin-left: 0.5%" class="nav-item">
         <a class="btn btn-menu" href="/gallery/{{current_user.id}}">Галерея</a>
@@ -40,7 +40,9 @@
         <button class="btn btn-outline-success" type="submit">Search</button>
     </form>
     {% if current_user.is_authenticated %}
-        <a class="btn btn-menu" href="/profile">{{ current_user.name }}</a>
+        <p style="margin-bottom: 0px; margin-right: 1%">
+            <a class="btn btn-menu" href="/profile">{{ current_user.name }}</a>
+        </p>
     {% else %}
         <p style="margin-bottom: 0px; margin-right: 1%">
             <a class="btn btn-menu" href="/login">Войти</a>
