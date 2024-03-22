@@ -13,9 +13,21 @@ form.login_form {
     padding: 10px;
 }
 
-#h4{
-    padding-left: 20px;
-    color: rgb(228, 14, 88);
+nav {
+    background-color: #e2ee83
+}
+
+a.btn-login {
+    padding-top: 0.8rem;
+    background-color: #bfd833;
+    font-family:cursive;
+    font-size: 20px;
+    border-radius: 4px;
+    height: 60px
+}
+
+a.btn-login:hover {
+    background-color: #a2b827;
 }
 
 #picture{

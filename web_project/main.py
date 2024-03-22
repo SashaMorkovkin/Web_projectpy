@@ -25,7 +25,7 @@ def load_user(user_id):
 @app.route('/')
 def index():
     db_sess = db_session.create_session()
-    return render_template('list_prof.html', tegs='ol')
+    return render_template('first_list.html', tegs='ol')
 
 
 @app.route("/cookie_test")
