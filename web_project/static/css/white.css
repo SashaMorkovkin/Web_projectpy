@@ -17,8 +17,10 @@ nav {
     background-color: #e2ee83
 }
 
-a.btn-login {
+a.btn-menu {
     padding-top: 0.8rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     background-color: #bfd833;
     font-family:cursive;
     font-size: 20px;
@@ -26,7 +28,7 @@ a.btn-login {
     height: 60px
 }
 
-a.btn-login:hover {
+a.btn-menu:hover {
     background-color: #a2b827;
 }
 

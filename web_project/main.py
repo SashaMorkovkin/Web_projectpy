@@ -89,6 +89,11 @@ def logout():
     return redirect("/")
 
 
+@app.route('/test')
+def test():
+    return render_template('test.html', title='ТЕст')
+
+
 def main():
     db_session.global_init('db/blogs.db')
     app.run()
