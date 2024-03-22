@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Галерея</h1>
+{% if urls %}
+    {% for source in urls %}
+        <img src="{{ source }}">
+    {% endfor %}
+{% elif current_user.id == 0 %}
+    <div class="alert alert-warning" role="alert">
+        Для просмотра галереи и загрузки фото нужно авторизоваться
+    </div>
+{% else %}
+    <div class="alert alert-light" role="alert">
+        Ваша галерея пуста
+    </div>
+{% endif %}
+{% endblock %}

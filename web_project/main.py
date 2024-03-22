@@ -1,8 +1,11 @@
+import os
+
 from flask import Flask, render_template, redirect, request, make_response, abort, url_for, session
 from data import db_session, new_api
 import datetime as dt
 from forms.user import LoginForm, RegisterForm
 from data.users import User
+from data.category import Category
 from data.quezes import Quezes
 from data.questions import Questions
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
@@ -15,6 +18,15 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+def my_page_render(template, **kwargs):
+    print(kwargs)
+    db_sess = db_session.create_session()
+    categories = db_sess.query(Category).all()
+    if current_user.is_authenticated:
+        kwargs['avatar'] = url_for('static', filename=current_user.avatar)
+    return render_template(template, **kwargs, categories=categories, title='IQuiz')
+
+
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -23,8 +35,7 @@ def load_user(user_id):
 
 @app.route('/')
 def index():
-    db_sess = db_session.create_session()
-    return render_template('first_list.html', tegs='ol')
+    return my_page_render('first_list.html')
 
 
 @app.route("/cookie_test")
@@ -48,12 +59,11 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            return render_template('register.html', title='Регистрация',
-                                   form=form, message='Пароли разные')
+            return my_page_render('register.html', title='Регистрация', form=form,
+                                  message='Пароли разные')
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.name == form.name.data).first():
-            return render_template('register.html', title='Регистрация',
-                                   form=form, message='Пользователь уже существует')
+            return my_page_render('register.html', form=form, message='Пользователь уже существует')
         user = User(
             name=form.name.data,
             email=form.email.data,
@@ -63,8 +73,7 @@ def register():
         db_sess.commit()
         login_user(user, remember=True)
         return redirect('/')
-    return render_template('register.html', title='Регистрация',
-                           form=form)
+    return my_page_render('register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -76,10 +85,8 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
-        return render_template('login.html',
-                               message="Неправильный логин или пароль",
-                               form=form)
-    return render_template('login.html', title='Авторизация', form=form)
+        return my_page_render('login.html', message="Неправильный логин или пароль", form=form)
+    return my_page_render('login.html', form=form)
 
 
 @app.route('/logout')
@@ -92,14 +99,18 @@ def logout():
 @app.route('/gallery/<int:userid>')
 @app.route('/gallery/')
 def gallery(userid=0):
+    urls = []
     if userid:
-        return '123'
-    else:
-        return 'Для просмотра галереи надо авторизоваться'
+        directory = f'static/images/{current_user.id}'
+        if os.path.isdir(directory):
+            for image in os.listdir(directory):
+                urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
+    return my_page_render('gallery.html', urls=urls)
 
 
 def main():
     db_session.global_init('db/blogs.db')
+    db_session.create_session()
     app.run()
 
 

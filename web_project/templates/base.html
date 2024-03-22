@@ -28,20 +28,21 @@
             Категории
         </a>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#">тут будут категории</a></li>
-            <li><a class="dropdown-item" href="#">но их еще нет</a></li>
+            {% for cat in categories %}
+            <li><a class="dropdown-item" href="/{{cat.id}}">{{ cat.name }}</a></li>
+            {% endfor %}
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item" href="#">пукпук🐷</a></li>
         </ul>
     </ul>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <form class="d-flex" role="search" style="margin-left: 0.5%; margin-right: 35%">
+    <form class="d-flex" role="search" style="margin-left: 0.5%; margin-right: 32%">
         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Search</button>
     </form>
     {% if current_user.is_authenticated %}
         <p style="margin-bottom: 0px; margin-right: 1%">
-            <a class="btn btn-menu" href="/profile">{{ current_user.name }}</a>
+            <a class="btn btn-menu" href="/profile"><img src="{{ avatar }}" width="35" height="35" style="border: 1px solid; border-radius: 35px"> {{ current_user.name }}</a>
         </p>
     {% else %}
         <p style="margin-bottom: 0px; margin-right: 1%">
