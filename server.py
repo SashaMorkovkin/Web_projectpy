@@ -5,9 +5,10 @@ from data import db_session
 import datetime as dt
 from forms.user import LoginForm, RegisterForm
 from data.users import User
+from data.questions import Questions
+from forms.question import AddForm
 from data.category import Category
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -92,6 +93,27 @@ def login():
 def logout():
     logout_user()
     return redirect("/")
+
+
+@app.route('/questions', methods=['GET', 'POST'])
+@login_required
+def add_news():
+    form = AddForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        questions = Questions(
+            ask=request.json['ask'],
+            question1=request.json['question1'],
+            question2=request.json['question2'],
+            question3=request.json['question3'],
+            question4=request.json['question4'],
+            is_private=request.json['is_private'],
+        )
+        current_user.questions.append(questions)
+        db_sess.merge(current_user)
+        db_sess.commit()
+        return redirect('/')
+    return render_template('add_question.html', title='добавить вопрос', form=form)
 
 
 @app.route('/gallery/<int:userid>')

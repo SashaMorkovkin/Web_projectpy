@@ -10,7 +10,5 @@ class AddForm(FlaskForm):
     question2 = StringField('Ответ2', validators=[DataRequired()])
     question3 = StringField('Ответ3', validators=[DataRequired()])
     question4 = StringField('Ответ4', validators=[DataRequired()])
-    question5 = StringField('Ответ5', validators=[DataRequired()])
-    question6 = StringField('Ответ6', validators=[DataRequired()])
-    remember_me = BooleanField('Публичная')
+    is_private = BooleanField('Публичная')
     submit = SubmitField('Создать')
