@@ -116,7 +116,7 @@ def add_news():
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
-    return my_page_render('add_question.html', title='добавить вопрос', form=form)
+    return my_page_render('add_question.html', form=form)
 
 
 @app.route('/gallery/<int:userid>')
