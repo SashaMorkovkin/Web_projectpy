@@ -8,6 +8,7 @@ from data import db_session
 from data.users import User
 from data.questions import Questions
 from data.category import Category
+from data.quezes import Quezes
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 
@@ -98,25 +99,25 @@ def logout():
     return redirect("/")
 
 
-@app.route('/questions', methods=['GET', 'POST'])
+@app.route('/newquiz', methods=['GET', 'POST'])
 @login_required
 def add_news():
     form = AddForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         questions = Questions(
-            ask=request.json['ask'],
-            question1=request.json['question1'],
-            question2=request.json['question2'],
-            question3=request.json['question3'],
-            question4=request.json['question4'],
-            is_private=request.json['is_private'],
+            ask=form.ask.data,
+            question1=form.question1.data,
+            question2=form.question2.data,
+            question3=form.question3.data,
+            question4=form.question4.data,
+            is_private=form.is_private.data,
         )
         current_user.questions.append(questions)
         db_sess.merge(current_user)
         db_sess.commit()
         return redirect('/')
-    return render_template('add_question.html', title='добавить вопрос', form=form)
+    return my_page_render('add_question.html', form=form)
 
 
 @app.route('/gallery/<int:userid>')
@@ -140,6 +141,9 @@ def search():
         if quest_method == 'Юзер':
             users = sess.query(User).filter(User.name.like(f'%{quest}%'))
             return my_page_render('search.html', quest=quest, quest_method=quest_method, rez=users)
+        if quest_method == 'Опрос':
+            quizes = sess.query(Quezes).filter(Quezes.title.like(f'%{quest}%'))
+            return my_page_render('search.html', quest=quest, quest_method=quest_method, rez=quizes)
 
 
 def main():
