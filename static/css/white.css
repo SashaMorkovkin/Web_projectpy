@@ -17,7 +17,7 @@ nav {
     background-color: #e2ee83
 }
 
-a.btn-menu {
+*.btn-menu {
     padding-top: 0.8rem;
     padding-left: 1rem;
     padding-right: 1rem;
@@ -25,13 +25,37 @@ a.btn-menu {
     font-family:cursive;
     font-size: 20px;
     border-radius: 4px;
-    height: 60px
+    height: 60px;
+    border: 3px solid #a2b827;
 }
 
-a.btn-menu:hover {
+*.btn-menu:hover {
     background-color: #a2b827;
 }
 
-#picture{
-    background-image: url_for('static', filename='images/эмблема.png'), no-repeat;
+body {
+    background-image: url('/static/images/bg.png');
+    background-size: cover;
+}
+
+form.form-users {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 600px;
+    background-color: #e2ee83;
+    border: 3px solid #bfd833;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+*.btn.btn-succses {
+    background-color: #e2ee83;
+    border: 3px solid #bfd833;
+    font-family:cursive;
+    border-radius: 4px;
+}
+
+*.btn.btn-succses:hover {
+    background-color: #bfd833;
+    border: 3px dashed #a2b827;
 }

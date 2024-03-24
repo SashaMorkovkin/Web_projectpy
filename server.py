@@ -1,14 +1,15 @@
 import os
-
 from flask import Flask, render_template, redirect, request, make_response, url_for
-from data import db_session
 import datetime as dt
 from forms.user import LoginForm, RegisterForm
+from forms.question import AddForm
+from forms.search import Search
+from data import db_session
 from data.users import User
 from data.questions import Questions
-from forms.question import AddForm
 from data.category import Category
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -21,9 +22,14 @@ def my_page_render(template, **kwargs):
     print(kwargs)
     db_sess = db_session.create_session()
     categories = db_sess.query(Category).all()
+    search_form = Search()
     if current_user.is_authenticated:
         kwargs['avatar'] = url_for('static', filename=current_user.avatar)
-    return render_template(template, **kwargs, categories=categories, title='IQuiz')
+    return render_template(template,
+                           categories=categories,
+                           title='IQuiz',
+                           search=search_form,
+                           **kwargs)
 
 
 @login_manager.user_loader
@@ -41,13 +47,11 @@ def index():
 def cookie_test():
     visits_count = int(request.cookies.get("visits_count", 0))
     if visits_count:
-        res = make_response(
-            f"Вы пришли на эту страницу {visits_count + 1} раз")
+        res = make_response(f"Вы пришли на эту страницу {visits_count + 1} раз")
         res.set_cookie("visits_count", str(visits_count + 1),
                        max_age=60 * 60 * 24 * 365 * 2)
     else:
-        res = make_response(
-            "Вы пришли на эту страницу в первый раз за последние 2 года")
+        res = make_response("Вы пришли на эту страницу в первый раз за последние 2 года")
         res.set_cookie("visits_count", '1',
                        max_age=60 * 60 * 24 * 365 * 2)
     return res
@@ -58,11 +62,10 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
-            return my_page_render('register.html', title='Регистрация', form=form,
-                                  message='Пароли разные')
+            return my_page_render('register.html', form=form, message='Пароли разные')
         db_sess = db_session.create_session()
-        if db_sess.query(User).filter(User.name == form.name.data).first():
-            return my_page_render('register.html', form=form, message='Пользователь уже существует')
+        if db_sess.query(User).filter(User.email == form.email.data).first():
+            return my_page_render('register.html', form=form, message='Email уже зарегистрирован')
         user = User(
             name=form.name.data,
             email=form.email.data,
@@ -126,6 +129,14 @@ def gallery(userid=0):
             for image in os.listdir(directory):
                 urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
     return my_page_render('gallery.html', urls=urls)
+
+
+@app.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'GET':
+        return f'result for {request}'
+    if request.method == 'POST':
+        return f'result for {request}'
 
 
 def main():
