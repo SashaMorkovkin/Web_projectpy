@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Результат поиска по запросу: {{ quest }} | {{ quest_method }}</h1>
+{% if quest_method == 'Юзер' %}
+{% for user in rez %}
+    <div class="alert alert-success">
+        <div class="container text-center">
+            <div class="row align-items-start">
+                <div class="col align-self-start" style="text-align: left">
+                    <img src="{{ url_for('static', filename=user.avatar) }}" width="150" height="150" style="border: 5px solid; border-radius: 150px">
+                </div>
+                <div class="col">
+                    <h5>{{ user.name }}</h5>
+                </div>
+                <div class="col" style="text-align: right">
+                    <p><a class="btn btn-primary" href="profile/{{ user.id }}">Открыть профиль</a></p>
+                    <p><a class="btn btn-success" href="subscribe/{{ user.id }}">Подписаться</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endif %}
+{% endblock %}

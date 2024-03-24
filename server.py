@@ -134,9 +134,12 @@ def gallery(userid=0):
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.method == 'GET':
-        return f'result for {request}'
-    if request.method == 'POST':
-        return f'result for {request}'
+        quest = request.args['field']
+        quest_method = request.args.get('user', request.args.get('quiz'))
+        sess = db_session.create_session()
+        if quest_method == 'Юзер':
+            users = sess.query(User).filter(User.name.like(f'%{quest}%'))
+            return my_page_render('search.html', quest=quest, quest_method=quest_method, rez=users)
 
 
 def main():
