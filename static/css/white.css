@@ -34,7 +34,7 @@ nav {
 }
 
 body {
-    background-image: url('/static/images/bg.png');
+    background-image: url('/static/images/default/bg.png');
     background-size: cover;
 }
 

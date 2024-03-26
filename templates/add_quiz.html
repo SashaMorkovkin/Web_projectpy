@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Добавление вопроса</h1>
+<h1>Новый опрос</h1>
 <form action="" method="post">
     {{form.hidden_tag()}}
     {{form.csrf_token}}
@@ -15,54 +15,48 @@
         {% endfor %}
     </p>
     <p>
-        {{form.answer1.label}}
-        {{form.answer1(class="form-control")}}<br>
-        {% for error in form.answer1.errors %}
+        {{form.description.label}}
+        {{form.description(class="form-control", style="resize: none", rows="4")}}<br>
+        {% for error in form.description.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{form.answer2.label}}
-        {{form.answer2(class="form-control")}}<br>
-        {% for error in form.answer2.errors %}
+        {{form.category1.label}}
+        {{form.category1(class="form-control")}}<br>
+        {% for error in form.category1.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{form.answer3.label}}
-        {{form.answer3(class="form-control")}}<br>
-        {% for error in form.answer3.errors %}
+        {{form.category2.label}}
+        {{form.category2(class="form-control")}}<br>
+        {% for error in form.category2.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{form.answer4.label}}
-        {{form.answer4(class="form-control")}}<br>
-        {% for error in form.answer4.errors %}
+        {{form.category3.label}}
+        {{form.category3(class="form-control")}}<br>
+        {% for error in form.category3.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
-        {{form.answer5.label}}
-        {{form.answer5(class="form-control")}}<br>
-        {% for error in form.answer5.errors %}
-            <p class="alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
+        <a class="btn btn-success" href="/newquiz/{{ id }}/newquest"> Добавить вопрос </a>
     </p>
     <p>
-        {{form.answer6.label}}
-        {{form.answer6(class="form-control")}}<br>
-        {% for error in form.answer6.errors %}
+        {{form.mode.label}}
+        {{form.mode(class="form-control")}}<br>
+        {% for error in form.mode.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>

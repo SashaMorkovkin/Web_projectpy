@@ -1,8 +1,9 @@
 import os
 from flask import Flask, render_template, redirect, request, make_response, url_for
 import datetime as dt
+from random import randint
 from forms.user import LoginForm, RegisterForm
-from forms.question import AddForm
+from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
 from data import db_session
 from data.users import User
@@ -62,8 +63,6 @@ def cookie_test():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        if form.password.data != form.password_again.data:
-            return my_page_render('register.html', form=form, message='Пароли разные')
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
             return my_page_render('register.html', form=form, message='Email уже зарегистрирован')
@@ -99,22 +98,38 @@ def logout():
     return redirect("/")
 
 
-@app.route('/newquiz', methods=['GET', 'POST'])
+@app.route('/newquiz/<int:quizid>')
+@app.route('/newquiz')
+def add_quiz(quizid=0):
+    sess = db_session.create_session()
+    if not quizid:
+        quizesids = sess.query(Quezes.id).all()
+        newid = randint(1, 100001)
+        while newid in quizesids:
+            newid = randint(1, 100001)
+        else:
+            return redirect(f'/newquiz/{newid}')
+    else:
+        form = AddQuiz()
+        return my_page_render('add_quiz.html', form=form, id=quizid)
+
+
+@app.route('/newquiz/<int:quizid>/newquest', methods=['GET', 'POST'])
 @login_required
-def add_news():
-    form = AddForm()
+def add_quest(quizid):
+    form = AddQuest()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
-        questions = Questions(
-            ask=form.ask.data,
-            question1=form.question1.data,
-            question2=form.question2.data,
-            question3=form.question3.data,
-            question4=form.question4.data,
-            is_private=form.is_private.data,
+        question = Questions(
+            title=form.title.data,
+            answer1=form.answer1.data,
+            answer2=form.answer2.data,
+            answer3=form.answer3.data,
+            answer4=form.answer4.data,
+            answer5=form.answer5.data,
+            answer6=form.answer6.data
         )
-        current_user.questions.append(questions)
-        db_sess.merge(current_user)
+        question.quizid = quizid
         db_sess.commit()
         return redirect('/')
     return my_page_render('add_question.html', form=form)
@@ -148,7 +163,11 @@ def search():
 
 def main():
     db_session.global_init('db/blogs.db')
-    db_session.create_session()
+    sess = db_session.create_session()
+    categories = [(0, '')]
+    for cat in sess.query(Category).all():
+        categories.append((cat.id, cat.name))
+    AddQuiz.set_categories(categories)
     app.run()
 
 
