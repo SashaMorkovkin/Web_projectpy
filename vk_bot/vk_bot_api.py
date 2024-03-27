@@ -24,7 +24,7 @@ def main():
         if event.type == VkBotEventType.MESSAGE_NEW and vk.groups.isMember(group_id='225254028',
                                                                            user_id=event.obj.message['from_id']) == 0:
             vk.messages.send(user_id=event.obj.message['from_id'],
-                             message=f"Привет, {vk.users.get(user_id=event.obj.message['from_id'], fields='first_name')[0]['first_name']}! Вот ссылка на авторизацию: *ссылка*",
+                             message=f"Привет, {vk.users.get(user_id=event.obj.message['from_id'], fields='first_name')[0]['first_name']}! Для прохождения опросов нужно подписаться на бота.",
                              random_id=random.randint(0, 2 ** 64))
 
 
