@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, request, make_response, url_for
+from flask import Flask, render_template, redirect, request, make_response, url_for, abort
 import datetime as dt
 from random import randint
 from forms.user import LoginForm, RegisterForm
@@ -32,6 +32,12 @@ def my_page_render(template, **kwargs):
                            title='IQuiz',
                            search=search_form,
                            **kwargs)
+
+
+@app.errorhandler(401)
+def get_login(error):
+    print(error)
+    return redirect('/login')
 
 
 @login_manager.user_loader
@@ -74,6 +80,7 @@ def register():
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
+        os.mkdir(f'static/images/{user.id}')
         return redirect('/')
     return my_page_render('register.html', form=form)
 
@@ -100,6 +107,7 @@ def logout():
 
 @app.route('/newquiz/<int:quizid>')
 @app.route('/newquiz')
+@login_required
 def add_quiz(quizid=0):
     sess = db_session.create_session()
     if not quizid:
@@ -135,18 +143,6 @@ def add_quest(quizid):
     return my_page_render('add_question.html', form=form)
 
 
-@app.route('/gallery/<int:userid>')
-@app.route('/gallery/')
-def gallery(userid=0):
-    urls = []
-    if userid:
-        directory = f'static/images/{current_user.id}'
-        if os.path.isdir(directory):
-            for image in os.listdir(directory):
-                urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
-    return my_page_render('gallery.html', urls=urls)
-
-
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     if request.method == 'GET':
@@ -159,6 +155,33 @@ def search():
         if quest_method == 'Опрос':
             quizes = sess.query(Quezes).filter(Quezes.title.like(f'%{quest}%'))
             return my_page_render('search.html', quest=quest, quest_method=quest_method, rez=quizes)
+
+
+@app.route('/album')
+@login_required
+def my_gallery():
+    urls = []
+    directory = f'static/images/{current_user.id}'
+    if os.path.isdir(directory):
+        for image in os.listdir(directory):
+            urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
+    return my_page_render('gallery.html', urls=urls, length=len(urls), user=current_user)
+
+
+@app.route('/album/<int:userid>')
+def user_gallery(userid):
+    if current_user.is_authenticated and userid == current_user.id:
+        return redirect('/album')
+    sess = db_session.create_session()
+    user = sess.query(User).get(userid)
+    if not user:
+        return make_response(404, 'unknown user id')
+    urls = []
+    directory = f'static/images/{userid}'
+    if os.path.isdir(directory):
+        for image in os.listdir(directory):
+            urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
+    return my_page_render('gallery.html', urls=urls, user=user)
 
 
 def main():

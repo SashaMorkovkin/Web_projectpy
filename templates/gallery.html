@@ -1,14 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Галерея</h1>
+<h1>Галерея {{user.name}}</h1>
 {% if urls %}
-    {% for source in urls %}
-        <img src="{{ source }}">
-    {% endfor %}
-{% elif current_user.id == 0 %}
-    <div class="alert alert-warning" role="alert">
-        Для просмотра галереи и загрузки фото нужно авторизоваться
+    <div class="container">
+        {% for i in range(urls|length // 4 + 1) %}
+            <div class="row align-items-left">
+                {% for source in urls[i * 4: (i + 1) * 4] %}
+                    <div class="col align-self-start" style="text-align: center; width: 20%">
+                        <div class="alert alert-dark" style="width: 232px; height: 232px">
+                            <img src="{{ source }}" style="max-width: 200px; max-height: 200px">
+                        </div>
+                    </div>
+                {% endfor %}
+                {% for i in range(4 - urls[i * 4: (i + 1) * 4]|length ) %}
+                    <div class="col align-self-start" style="text-align: left; width: 20%"></div>
+                {% endfor %}
+            </div>
+        {% endfor %}
     </div>
 {% else %}
     <div class="alert alert-light" role="alert">
