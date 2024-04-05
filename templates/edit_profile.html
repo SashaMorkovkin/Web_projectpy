@@ -1,0 +1,40 @@
+{% extends "base.html" %} {% block content %}
+{{ title }}
+{{ form.hidden_tag() }} {{ form.csrf_token }}
+{{ form.name.label }} {{ form.name(class="form-control") }}
+{% for error in form.name.errors %}
+
+{{ error }}
+
+{% endfor %}
+{{ form.surname.label }} {{ form.surname(class="form-control") }}
+{% for error in form.surname.errors %}
+
+{{ error }}
+
+{% endfor %}
+{{ form.about.label }} {{ form.about(class="form-control")}}
+{% for error in form.about.errors %}
+
+{{ error }}
+
+{% endfor %}
+{{ form.age.label }} {{ form.age(class="form-control", type="number") }}
+{% for error in form.age.errors %}
+
+{{ error }}
+
+{% endfor %}
+{{ form.photo.label }} {{ form.photo(class="form-control") }}
+{% for error in form.photo.errors %}
+
+{{ error }}
+
+{% endfor %}
+
+{{ form.submit(type="submit", class="btn btn-primary") }}
+
+{% if message %}
+{{ message }}
+{% endif %}
+{% endblock %}

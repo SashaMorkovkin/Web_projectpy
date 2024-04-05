@@ -5,13 +5,14 @@ from random import randint
 from forms.user import LoginForm, RegisterForm
 from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
+from forms.profile import ProfileForm
+import vk_bot.vk_bot_api
 from data import db_session
 from data.users import User
 from data.questions import Questions
 from data.category import Category
 from data.quezes import Quezes
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -141,6 +142,45 @@ def add_quest(quizid):
         db_sess.commit()
         return redirect('/')
     return my_page_render('add_question.html', form=form)
+
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if current_user.is_authenticated:
+        db_sess = db_session.create_session()
+        data = db_sess.query(User).filter(User.name, User.avatar, User.surname, User.age)
+        return my_page_render('profile.html', data=data)
+    return my_page_render('profile.html', data=False)
+
+
+@app.route('/redact_profile', methods=['GET', 'POST'])
+def redact_profile():
+    form = ProfileForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        if user:
+            form.name.data = user.name
+            form.surname.data = user.surname
+            form.about.data = user.about
+            form.age.data = user.age
+            form.photo.data = user.photo
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        if user:
+            user.name = form.name.data
+            user.surname = form.surname.data
+            user.about = form.about.data
+            user.age = form.age.data
+            user.photo = form.photo.data
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('edit_profile.html', title='Редактирование работы', form=form)
 
 
 @app.route('/search', methods=['GET', 'POST'])
