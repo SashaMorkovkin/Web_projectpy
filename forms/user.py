@@ -1,6 +1,7 @@
-from wtforms.validators import DataRequired, EqualTo
+from wtforms.validators import DataRequired, EqualTo, Length, NumberRange
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField, IntegerField
+from wtforms import FileField, TextAreaField, SelectField
 
 
 class LoginForm(FlaskForm):
@@ -18,3 +19,14 @@ class RegisterForm(FlaskForm):
                                    validators=[DataRequired(),
                                                EqualTo('password', message='пароли не совпадают')])
     submit = SubmitField('Регистрация')
+
+
+class EditProfileForm(FlaskForm):
+    name = StringField('Имя', validators=[DataRequired()])
+    about = TextAreaField('Обо мне', validators=[Length(max=700)])
+    age = IntegerField('Возраст', validators=[NumberRange(6, 99)])
+    photo = FileField('Красивое фото')
+    is_private = SelectField('Приватность профиля', choices=['Открыт для всех',
+                                                             'Открыт для друзей',
+                                                             'Закрытый'])
+    submit = SubmitField('Сохранить')

@@ -2,11 +2,9 @@ import os
 from flask import Flask, render_template, redirect, request, make_response, url_for, abort
 import datetime as dt
 from random import randint
-from forms.user import LoginForm, RegisterForm
+from forms.user import LoginForm, RegisterForm, EditProfileForm
 from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
-from forms.profile import ProfileForm
-import vk_bot.vk_bot_api
 from data import db_session
 from data.users import User
 from data.questions import Questions
@@ -81,6 +79,8 @@ def register():
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
+        if os.path.isdir(f'static/images/{user.id}'):
+            os.remove(f'static/images/{user.id}')
         os.mkdir(f'static/images/{user.id}')
         return redirect('/')
     return my_page_render('register.html', form=form)
@@ -145,17 +145,15 @@ def add_quest(quizid):
 
 
 @app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    if current_user.is_authenticated:
-        db_sess = db_session.create_session()
-        data = db_sess.query(User).filter(User.name, User.avatar, User.surname, User.age)
-        return my_page_render('profile.html', data=data)
-    return my_page_render('profile.html', data=False)
+@login_required
+def my_profile():
+    return my_page_render('my_profile.html')
 
 
-@app.route('/redact_profile', methods=['GET', 'POST'])
-def redact_profile():
-    form = ProfileForm()
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
     if request.method == "GET":
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == current_user.id).first()
@@ -180,7 +178,7 @@ def redact_profile():
             return redirect('/')
         else:
             abort(404)
-    return render_template('edit_profile.html', title='Редактирование работы', form=form)
+    return my_page_render('edit_profile.html', form=form)
 
 
 @app.route('/search', methods=['GET', 'POST'])
@@ -205,7 +203,7 @@ def my_gallery():
     if os.path.isdir(directory):
         for image in os.listdir(directory):
             urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
-    return my_page_render('gallery.html', urls=urls, length=len(urls), user=current_user)
+    return my_page_render('album.html', urls=urls, user=current_user)
 
 
 @app.route('/album/<int:userid>')
@@ -221,10 +219,12 @@ def user_gallery(userid):
     if os.path.isdir(directory):
         for image in os.listdir(directory):
             urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
-    return my_page_render('gallery.html', urls=urls, user=user)
+    return my_page_render('album.html', urls=urls, user=user)
 
 
 def main():
+    if not os.path.isdir("db"):
+        os.mkdir("db")
     db_session.global_init('db/blogs.db')
     sess = db_session.create_session()
     categories = [(0, '')]
@@ -232,7 +232,3 @@ def main():
         categories.append((cat.id, cat.name))
     AddQuiz.set_categories(categories)
     app.run()
-
-
-if __name__ == '__main__':
-    main()

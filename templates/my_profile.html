@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <img src="{{ url_for('static', filename=current_user.avatar) }}">
+    <h1>Ваш профиль</h1>
+    Имя: {{current_user.name}}<br>
+    {{current_user.age}} лет<br>
+    О себе:<br>
+        {{current_user.about}}<br>
+    <a class="btn btn-danger" href="/logout">Выйти</a>
+    <a class="btn btn-menu" href="/edit_profile">Редактировать</a>
+{% endblock %}

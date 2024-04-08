@@ -11,7 +11,6 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     age = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     about = sqlalchemy.Column(sqlalchemy.String, nullable=True, default='Не важно')
@@ -19,6 +18,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     avatar = sqlalchemy.Column(sqlalchemy.String, default='images/default/avatar.jpg')
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
+    is_private = sqlalchemy.Column(sqlalchemy.String, default='False')
     quezes = orm.relationship("Quezes", back_populates='author')
 
     def set_password(self, password):
