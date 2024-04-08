@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1 style="text-align: center">Регистрация пользователей</h1>
-<form action="" method="post" class="form-users">
+<form action="" class="backgrounded-element" method="post" style="width: 50%">
     {{form.hidden_tag()}}
     {{form.csrf_token}}
     <h6>{{ form.email.label }}</h6>

@@ -1,16 +1,11 @@
-h2 {
-    color=rgb(100, 100, 100);
-    background=rgb(228, 14, 88);
-}
-
-form.login_form {
+*.backgrounded-element {
     margin-left: auto;
     margin-right: auto;
-    max-width: 450px;
-    background-color: #ffcc00;
-    border: 1px solid gray;
-    border-radius: 5px;
-    padding: 10px;
+    max-width: 100%;
+    background-color: #e2ee83;
+    border: 3px solid #bfd833;
+    border-radius: 10px;
+    padding: 20px;
 }
 
 nav {
@@ -36,16 +31,6 @@ nav {
 body {
     background-image: url('/static/images/default/bg.png');
     background-size: cover;
-}
-
-form.form-users {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 600px;
-    background-color: #e2ee83;
-    border: 3px solid #bfd833;
-    border-radius: 10px;
-    padding: 20px;
 }
 
 *.btn.btn-succses {
