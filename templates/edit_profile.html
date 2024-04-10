@@ -4,31 +4,37 @@
 <form action="" class="form-users" method="post">
     {{ form.hidden_tag() }}
     {{ form.csrf_token }}
-        <h6>{{ form.name.label }}</h6>
-        {{ form.name(class="form-control") }}
-        {% for error in form.name.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-        <h6>{{ form.about.label }}</h6>
-        {{ form.about(class="form-control", style="resize: none", rows="5") }}
-        {% for error in form.about.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-        <h6>{{ form.age.label }}</h6>
-        {{ form.age(class="form-control" type="number") }}
-        {% for error in form.age.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{ error }}
-            </div>
-        {% endfor %}
-        {{ form.submit(type="submit", class="btn btn-primary") }}
-
-        {% if message %}
-            {{ message }}
-        {% endif %}
+    <h6>{{ form.name.label }}</h6>
+    {{ form.name(class="form-control") }}
+    {% for error in form.name.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    <h6>{{ form.surname.label }}</h6>
+    {{ form.surname(class="form-control") }}
+    {% for error in form.surname.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    <h6>{{ form.about.label }}</h6>
+    {{ form.about(class="form-control", style="resize: none", rows="5") }}
+    {% for error in form.about.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    <h6>{{ form.age.label }}</h6>
+    {{ form.age(class="form-control") }}
+    {% for error in form.age.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    {% if message %}
+    {{ message }}
+    {% endif %}
 </form>
 {% endblock %}

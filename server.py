@@ -150,6 +150,16 @@ def my_profile():
     return my_page_render('my_profile.html')
 
 
+@app.route('/photo', methods=['POST', 'GET'])
+def change_avatar():
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        image = request.files['file']
+        image.save(f'static/images/default/avatar.jpg')
+        user.avatar = f'static/images/default/avatar.jpg'
+
+
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -162,7 +172,7 @@ def edit_profile():
             form.surname.data = user.surname
             form.about.data = user.about
             form.age.data = user.age
-            form.photo.data = user.photo
+            form.avatar.data = user.avatar
         else:
             abort(404)
     if form.validate_on_submit():
@@ -173,7 +183,7 @@ def edit_profile():
             user.surname = form.surname.data
             user.about = form.about.data
             user.age = form.age.data
-            user.photo = form.photo.data
+            user.avatar = form.avatar.data
             db_sess.commit()
             return redirect('/')
         else:
