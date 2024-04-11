@@ -1,9 +1,5 @@
 SQLAlchemy~=2.0.25
-werkzeug~=2.2.3
-wtforms~=3.1.2
-requests~=2.31.0
+Werkzeug~=2.3.8
 flask~=3.0.2
-flask_wtf
-sqlalchemy_serializer
-flask_login
-vk_api
+wtforms~=3.1.2
+vk_api~=11.9.9
