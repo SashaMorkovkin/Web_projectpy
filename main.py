@@ -12,6 +12,7 @@ from data.category import Category
 from data.quezes import Quezes
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 app.config['PERMANENT_SESSION_LIFETIME'] = dt.timedelta(days=30)
