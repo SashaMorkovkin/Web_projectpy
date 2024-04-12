@@ -1,4 +1,4 @@
-from server import main
+from site import main
 from vk_bot.vk_bot_api import bot
 import threading
 
