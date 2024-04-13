@@ -13,12 +13,12 @@
                     Имя: {{current_user.name}}<br>
                     {% if not current_user.age %}
                         Возраст неизвестен<br>
-                    {% elif str(current_user.age)[-1] in [2, 3, 4] %}
+                    {% elif 2 <= (current_user.age | int) % 10 <= 4 %}
                         Возраст: {{ current_user.age }} года<br>
-                    {% elif str(current_user.age)[-1] == '1' %}
-                        Возраст: {{ current_user.age }} год<br>
+                    {% elif (current_user.age | int) % 10 == 1 %}
+                        Возраст: {{ current_user.age | int }} год<br>
                     {% else %}
-                        Возраст: {{ current_user.age }} лет<br>
+                        Возраст: {{ current_user.age | int }} лет<br>
                     {% endif %}
                     С нами с {{ current_user.modified_date.strftime("%d.%m.%y") }}<br>
                     О себе:<br>{{ "ㅤㅤ" + current_user.about }}

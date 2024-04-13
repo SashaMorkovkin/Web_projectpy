@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Редактирование профиля</h1>
-<form action="" class="form-users" method="post">
+<form action="" class="backgrounded-element" method="post">
     {{ form.hidden_tag() }}
     {{ form.csrf_token }}
     <h6>{{ form.name.label }}</h6>
@@ -11,14 +11,6 @@
         {{ error }}
     </div>
     {% endfor %}
-    <h6>{{ form.surname.label }}</h6>
-    {{ form.surname(class="form-control") }}
-    {% for error in form.surname.errors %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-    {% endfor %}
-    <h6>{{ form.about.label }}</h6>
     {{ form.about(class="form-control", style="resize: none", rows="5") }}
     {% for error in form.about.errors %}
     <div class="alert alert-danger" role="alert">
@@ -28,6 +20,12 @@
     <h6>{{ form.age.label }}</h6>
     {{ form.age(class="form-control") }}
     {% for error in form.age.errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endfor %}
+    {{ form.is_private(class="form-control") }}
+    {% for error in form.is_private.errors %}
     <div class="alert alert-danger" role="alert">
         {{ error }}
     </div>

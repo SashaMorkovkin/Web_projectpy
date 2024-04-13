@@ -23,11 +23,9 @@ class RegisterForm(FlaskForm):
 
 class EditProfileForm(FlaskForm):
     name = StringField('Имя', validators=[DataRequired()])
-    surname = StringField('Фамилия', validators=[DataRequired()])
     about = TextAreaField('Обо мне', validators=[Length(max=700)])
     age = IntegerField('Возраст', validators=[NumberRange(6, 99)])
-    avatar = FileField('Красивое фото', validators=[DataRequired()])
-    is_private = SelectField('Приватность профиля', choices=['Открыт для всех',
-                                                             'Открыт для друзей',
-                                                             'Закрытый'])
+    is_private = SelectField('Приватность профиля', choices=[('False', 'Открыт для всех'),
+                                                                  ("NS", 'Открыт для друзей'),
+                                                                  ("True", 'Закрытый')])
     submit = SubmitField('Сохранить')

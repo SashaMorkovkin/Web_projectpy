@@ -164,32 +164,28 @@ def change_avatar():
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfileForm()
-    if request.method == "GET":
+    editform = EditProfileForm()
+    if request.method == 'GET':
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         if user:
-            form.name.data = user.name
-            form.surname.data = user.surname
-            form.about.data = user.about
-            form.age.data = user.age
-            form.avatar.data = user.avatar
+            editform.name.data = user.name
+            editform.about.data = user.about
+            editform.age.data = user.age
         else:
             abort(404)
-    if form.validate_on_submit():
+    if editform.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         if user:
-            user.name = form.name.data
-            user.surname = form.surname.data
-            user.about = form.about.data
-            user.age = form.age.data
-            user.avatar = form.avatar.data
+            user.name = editform.name.data
+            user.about = editform.about.data
+            user.age = editform.age.data
             db_sess.commit()
-            return redirect('/')
+            return redirect('/profile')
         else:
             abort(404)
-    return my_page_render('edit_profile.html', form=form)
+    return my_page_render('edit_profile.html', form=editform)
 
 
 @app.route('/search', methods=['GET', 'POST'])
