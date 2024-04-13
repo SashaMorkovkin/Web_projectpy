@@ -47,22 +47,10 @@ def load_user(user_id):
 
 
 @app.route('/')
-def index():
-    return my_page_render('first_list.html')
-
-
-@app.route("/cookie_test")
-def cookie_test():
-    visits_count = int(request.cookies.get("visits_count", 0))
-    if visits_count:
-        res = make_response(f"Вы пришли на эту страницу {visits_count + 1} раз")
-        res.set_cookie("visits_count", str(visits_count + 1),
-                       max_age=60 * 60 * 24 * 365 * 2)
-    else:
-        res = make_response("Вы пришли на эту страницу в первый раз за последние 2 года")
-        res.set_cookie("visits_count", '1',
-                       max_age=60 * 60 * 24 * 365 * 2)
-    return res
+def mainpage():
+    sess = db_session.create_session()
+    quizes = sess.query(Quezes).all()
+    return my_page_render('first_list.html', quizes=quizes)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -71,7 +59,8 @@ def register():
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         if db_sess.query(User).filter(User.email == form.email.data).first():
-            return my_page_render('register.html', form=form, message='Email уже зарегистрирован')
+            return my_page_render('register.html', form=form,
+                                  message='Email уже зарегистрирован')
         user = User(
             name=form.name.data,
             email=form.email.data,
@@ -96,7 +85,8 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
-        return my_page_render('login.html', message="Неправильный логин или пароль", form=form)
+        return my_page_render('login.html', message="Неправильный логин или пароль",
+                              form=form)
     return my_page_render('login.html', form=form)
 
 
@@ -196,10 +186,12 @@ def search():
         sess = db_session.create_session()
         if quest_method == 'Юзер':
             users = sess.query(User).filter(User.name.like(f'%{quest}%'))
-            return my_page_render('search.html', quest=quest, quest_method=quest_method, rez=users)
+            return my_page_render('search.html', quest=quest, quest_method=quest_method,
+                                  rez=users)
         if quest_method == 'Опрос':
             quizes = sess.query(Quezes).filter(Quezes.title.like(f'%{quest}%'))
-            return my_page_render('search.html', quest=quest, quest_method=quest_method, rez=quizes)
+            return my_page_render('search.html', quest=quest, quest_method=quest_method,
+                                  rez=quizes)
 
 
 @app.route('/album')
