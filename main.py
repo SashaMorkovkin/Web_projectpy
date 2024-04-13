@@ -242,4 +242,5 @@ def main():
     for cat in sess.query(Category).all():
         categories.append((cat.id, cat.name))
     AddQuiz.set_categories(categories)
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
