@@ -17,4 +17,4 @@ class Quezes(SqlAlchemyBase, SerializerMixin):
                                   secondary="association",
                                   backref="quezes")
     mode = sqlalchemy.Column(sqlalchemy.String)
-    questions = sqlalchemy.Column(sqlalchemy.String)
+    questions = sqlalchemy.Column(sqlalchemy.String, default='')

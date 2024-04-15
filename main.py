@@ -71,7 +71,7 @@ def register():
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
-        if os.path.isdir(f'static/images/{user.id}'):
+        if os.path.isdir(url_for('static', filename=f'images/{user.id}')):
             os.rmdir(url_for('static', filename=f'images/{user.id}'))
         os.mkdir(f'static/images/{user.id}')
         return redirect('/')
@@ -107,12 +107,22 @@ def add_quiz(quizid=0):
     if not quizid:
         quizesids = sess.query(Quezes.id).all()
         newid = randint(1, 100001)
-        while newid in quizesids:
+        while (newid,) in quizesids:
             newid = randint(1, 100001)
         else:
             return redirect(f'/newquiz/{newid}')
     else:
         form = AddQuiz()
+        if form.validate_on_submit():
+            return
+        if (quizid,) not in sess.query(Quezes.id).all():
+            print(sess.query(Quezes.id).all())
+            quiz = Quezes(
+                id=quizid,
+                authorid=current_user.id,
+            )
+            sess.add(quiz)
+            sess.commit()
         return my_page_render('add_quiz.html', form=form, id=quizid)
 
 
@@ -121,20 +131,27 @@ def add_quiz(quizid=0):
 def add_quest(quizid):
     form = AddQuest()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
+        sess = db_session.create_session()
         question = Questions(
             title=form.title.data,
             answer1=form.answer1.data,
             answer2=form.answer2.data,
-            answer3=form.answer3.data,
-            answer4=form.answer4.data,
-            answer5=form.answer5.data,
-            answer6=form.answer6.data,
             quizid = quizid
         )
-        db_sess.add(question)
-        db_sess.commit()
-        return redirect('/')
+        if form.answer3.data:
+            question.answer3 = form.answer3.data
+        if form.answer4.data:
+            question.answer4 = form.answer3.data
+        if form.answer5.data:
+            question.answer5 = form.answer3.data
+        if form.answer6.data:
+            question.answer6 = form.answer3.data
+        sess.add(question)
+        sess.commit()
+        quiz = sess.query(Quezes).filter(Quezes.id == quizid).first()
+        quiz.questions = f'{quiz.questions}, {question.id}'
+        sess.commit()
+        return redirect(f'/newquiz/{quizid}')
     return my_page_render('add_question.html', form=form)
 
 

@@ -2,12 +2,12 @@
 
 {% block content %}
 <h1>Добавление вопроса</h1>
-<form action="" method="post">
+<form action="" method="post" class="backgrounded-element">
     {{form.hidden_tag()}}
     {{form.csrf_token}}
     <p>
         {{form.title.label}}
-        {{form.title(class="form-control")}}<br>
+        {{form.title(class="form-control", placeholder='Обязателен')}}<br>
         {% for error in form.title.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
@@ -16,7 +16,7 @@
     </p>
     <p>
         {{form.answer1.label}}
-        {{form.answer1(class="form-control")}}<br>
+        {{form.answer1(class="form-control", placeholder='Обязателен')}}<br>
         {% for error in form.answer1.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
@@ -25,7 +25,7 @@
     </p>
     <p>
         {{form.answer2.label}}
-        {{form.answer2(class="form-control")}}<br>
+        {{form.answer2(class="form-control", placeholder='Обязателен')}}<br>
         {% for error in form.answer2.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
@@ -34,7 +34,7 @@
     </p>
     <p>
         {{form.answer3.label}}
-        {{form.answer3(class="form-control")}}<br>
+        {{form.answer3(class="form-control", placeholder='По желанию')}}<br>
         {% for error in form.answer3.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
@@ -43,7 +43,7 @@
     </p>
     <p>
         {{form.answer4.label}}
-        {{form.answer4(class="form-control")}}<br>
+        {{form.answer4(class="form-control", placeholder='По желанию')}}<br>
         {% for error in form.answer4.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
@@ -52,7 +52,7 @@
     </p>
     <p>
         {{form.answer5.label}}
-        {{form.answer5(class="form-control")}}<br>
+        {{form.answer5(class="form-control", placeholder='По желанию')}}<br>
         {% for error in form.answer5.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
@@ -61,7 +61,7 @@
     </p>
     <p>
         {{form.answer6.label}}
-        {{form.answer6(class="form-control")}}<br>
+        {{form.answer6(class="form-control", placeholder='По желанию')}}<br>
         {% for error in form.answer6.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
