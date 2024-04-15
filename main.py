@@ -206,8 +206,8 @@ def auth():
         print(response)
         if response[0]['status']:
             user.about = response[0]['status']
-        print(response[0]['crop_photo']['photo']['sizes'][-2])
-        user.avatar = response[0]['crop_photo']['photo']['sizes'][-2]['url']
+        if response[0]['crop_photo']['photo']['sizes'][-2]['url']:
+            user.avatar = response[0]['crop_photo']['photo']['sizes'][-2]['url']
         user.name = f"{response[0]['first_name']} {response[0]['last_name']}"
         db_sess.commit()
         return redirect('/profile')
