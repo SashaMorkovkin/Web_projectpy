@@ -21,6 +21,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     is_private = sqlalchemy.Column(sqlalchemy.String, default='False')
     quezes = orm.relationship("Quezes", back_populates='author')
+    vkid = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

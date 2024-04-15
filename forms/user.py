@@ -1,7 +1,8 @@
 from wtforms.validators import DataRequired, EqualTo, Length, NumberRange
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField, IntegerField
-from wtforms import FileField, TextAreaField, SelectField
+from wtforms import TextAreaField, SelectField
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 
 
 class LoginForm(FlaskForm):
@@ -29,3 +30,10 @@ class EditProfileForm(FlaskForm):
                                                                   ("NS", 'Открыт для друзей'),
                                                                   ("True", 'Закрытый')])
     submit = SubmitField('Сохранить')
+
+
+class EditAvatarForm(FlaskForm):
+    image = FileField('Выберите новое фото профиля',
+                      validators=[FileRequired(),
+                                  FileAllowed(["png", "jpg", "svg", "jpeg"], 'Images only!')])
+    submit = SubmitField('Поменять')

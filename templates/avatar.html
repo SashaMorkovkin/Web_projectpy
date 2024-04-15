@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Загрузите аватар</h2>
+        <form method="post" enctype='multipart/form-data' class="backgrounded-element"">
+            {{ form.hidden_tag() }}
+            {{ form.csrf_token }}
+            <h6>{{ form.image.label }}</h6>
+                {{ form.image(class="form-control", type='file') }}
+                {% for error in form.image.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            <p> {{ form.submit(type="submit", class="btn btn-primary") }} </p>
+            {% if message %}
+                {{ message }}
+            {% endif %}
+        </form>
+{% endblock %}

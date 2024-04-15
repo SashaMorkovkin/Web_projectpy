@@ -4,7 +4,7 @@ import datetime as dt
 import vk_api
 from random import randint
 from forms.vk_auth import AuthForm
-from forms.user import LoginForm, RegisterForm, EditProfileForm
+from forms.user import LoginForm, RegisterForm, EditProfileForm, EditAvatarForm
 from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
 from data import db_session
@@ -72,7 +72,7 @@ def register():
         db_sess.commit()
         login_user(user, remember=True)
         if os.path.isdir(f'static/images/{user.id}'):
-            os.remove(f'static/images/{user.id}')
+            os.rmdir(url_for('static', filename=f'images/{user.id}'))
         os.mkdir(f'static/images/{user.id}')
         return redirect('/')
     return my_page_render('register.html', form=form)
@@ -129,9 +129,10 @@ def add_quest(quizid):
             answer3=form.answer3.data,
             answer4=form.answer4.data,
             answer5=form.answer5.data,
-            answer6=form.answer6.data
+            answer6=form.answer6.data,
+            quizid = quizid
         )
-        question.quizid = quizid
+        db_sess.add(question)
         db_sess.commit()
         return redirect('/')
     return my_page_render('add_question.html', form=form)
@@ -143,14 +144,20 @@ def my_profile():
     return my_page_render('my_profile.html')
 
 
-@app.route('/photo', methods=['POST', 'GET'])
-def change_avatar():
-    if request.method == "GET":
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.id == current_user.id).first()
-        image = request.files['file']
-        image.save(f'static/images/default/avatar.jpg')
-        user.avatar = f'static/images/default/avatar.jpg'
+@app.route('/set_avatar', methods=['POST', 'GET'])
+def edit_avatar():
+    form = EditAvatarForm()
+    if form.validate_on_submit():
+        print(form.image.data)
+        form.image.data.save(f'static/images/{current_user.id}/avatar.png')
+        sess = db_session.create_session()
+        user = sess.get(User, current_user.id)
+        user.avatar = f'images/{current_user.id}/avatar.png'
+        sess.commit()
+        return redirect('/profile')
+    else:
+        return my_page_render('avatar.html', form=form)
+
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -234,7 +241,7 @@ def search():
 @login_required
 def my_gallery():
     urls = []
-    directory = f'static/images/{current_user.id}'
+    directory = url_for('static', filename=f'images/{current_user.id}')
     if os.path.isdir(directory):
         for image in os.listdir(directory):
             urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
