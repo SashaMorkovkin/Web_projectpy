@@ -1,7 +1,9 @@
 import os
 from flask import Flask, render_template, redirect, request, make_response, url_for, abort
 import datetime as dt
+import vk_api
 from random import randint
+from forms.vk_auth import AuthForm
 from forms.user import LoginForm, RegisterForm, EditProfileForm
 from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
@@ -176,6 +178,40 @@ def edit_profile():
         else:
             abort(404)
     return my_page_render('edit_profile.html', form=editform)
+
+
+def auth_handler():
+    key = input("Enter authentication code: ")
+    remember_device = True
+    return key, remember_device
+
+
+@app.route('/auth', methods=['GET', 'POST'])
+@login_required
+def auth():
+    form = AuthForm()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        login = form.login.data
+        password = form.password.data
+        vk_session = vk_api.VkApi(login, password, auth_handler=auth_handler)
+        try:
+            vk_session.auth(token_only=True)
+        except vk_api.AuthError as error_msg:
+            print(error_msg)
+            return
+        vk = vk_session.get_api()
+        response = vk.users.get(fields="first_name, last_name, status, crop_photo")
+        print(response)
+        if response[0]['status']:
+            user.about = response[0]['status']
+        print(response[0]['crop_photo']['photo']['sizes'][-2])
+        user.avatar = response[0]['crop_photo']['photo']['sizes'][-2]['url']
+        user.name = f"{response[0]['first_name']} {response[0]['last_name']}"
+        db_sess.commit()
+        return redirect('/profile')
+    return my_page_render('vk_auth.html', form=form)
 
 
 @app.route('/search', methods=['GET', 'POST'])
