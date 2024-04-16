@@ -113,17 +113,23 @@ def add_quiz(quizid=0):
             return redirect(f'/newquiz/{newid}')
     else:
         form = AddQuiz()
+        questions = []
         if form.validate_on_submit():
             return
-        if (quizid,) not in sess.query(Quezes.id).all():
-            print(sess.query(Quezes.id).all())
+        if not sess.query(Quezes).get(quizid):
             quiz = Quezes(
                 id=quizid,
                 authorid=current_user.id,
             )
             sess.add(quiz)
             sess.commit()
-        return my_page_render('add_quiz.html', form=form, id=quizid)
+        else:
+            quiz = sess.query(Quezes).get(quizid)
+            print(quiz.__dict__)
+            questsids = quiz.questions.split(',')
+            for questid in questsids:
+                questions.append(sess.query(Questions).get(questid))
+        return my_page_render('add_quiz.html', form=form, questions=questions)
 
 
 @app.route('/newquiz/<int:quizid>/newquest', methods=['GET', 'POST'])
@@ -135,17 +141,31 @@ def add_quest(quizid):
         question = Questions(
             title=form.title.data,
             answer1=form.answer1.data,
+            points1=form.points1.data,
             answer2=form.answer2.data,
-            quizid = quizid
+            points2=form.points2.data,
+            koeff=form.koeff.data,
+            quizid=quizid
         )
+        forsum = [form.points1.data, form.points2.data]
         if form.answer3.data:
-            question.answer3 = form.answer3.data
+            question.answer3, question.points3 = form.answer3.data, form.points3.data
+            forsum.append(form.points3)
         if form.answer4.data:
-            question.answer4 = form.answer3.data
+            question.answer4, question.points4 = form.answer4.data, form.points4.data
+            forsum.append(form.points4)
         if form.answer5.data:
-            question.answer5 = form.answer3.data
+            question.answer5, question.points5 = form.answer5.data, form.points5.data
+            forsum.append(form.points5)
         if form.answer6.data:
-            question.answer6 = form.answer3.data
+            question.answer6, question.points6 = form.answer6.data, form.points6.data
+            forsum.append(form.points6)
+        if sum(forsum) != 100:
+            return my_page_render(
+                'add_question.html',
+                form=form,
+                message='Сумма очков у существующих ответов должна быть равна 100.'
+            )
         sess.add(question)
         sess.commit()
         quiz = sess.query(Quezes).filter(Quezes.id == quizid).first()

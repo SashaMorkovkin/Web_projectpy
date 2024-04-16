@@ -51,6 +51,14 @@
         {% endfor %}
     </p>
     <p>
+        {% for quest in questions %}
+            <div class="alert alert-info">
+                {{ quest.title }}<br>
+                {{ quest.koeff }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
         <a class="btn btn-success" href="/newquiz/{{ id }}/newquest"> Добавить вопрос </a>
     </p>
     <p>
