@@ -105,12 +105,17 @@ def logout():
 def add_quiz(quizid=0):
     sess = db_session.create_session()
     if not quizid:
-        quizesids = sess.query(Quezes.id).all()
-        newid = randint(1, 100001)
-        while (newid,) in quizesids:
-            newid = randint(1, 100001)
+        draft = sess.query(Quezes.id).filter(Quezes.authorid == current_user.id,
+                                             Quezes.publicated == 0).first()
+        if draft:
+            return redirect(f'/newquiz/{draft[0]}')
         else:
-            return redirect(f'/newquiz/{newid}')
+            quizesids = sess.query(Quezes.id).all()
+            newid = randint(1, 100001)
+            while (newid,) in quizesids:
+                newid = randint(1, 100001)
+            else:
+                return redirect(f'/newquiz/{newid}')
     else:
         form = AddQuiz()
         questions = []
@@ -128,8 +133,9 @@ def add_quiz(quizid=0):
             print(quiz.__dict__)
             questsids = quiz.questions.split(',')
             for questid in questsids:
-                questions.append(sess.query(Questions).get(questid))
-        return my_page_render('add_quiz.html', form=form, questions=questions)
+                if questid:
+                    questions.append(sess.query(Questions).get(questid))
+        return my_page_render('add_quiz.html', form=form, questions=questions, id=quizid)
 
 
 @app.route('/newquiz/<int:quizid>/newquest', methods=['GET', 'POST'])
@@ -150,16 +156,16 @@ def add_quest(quizid):
         forsum = [form.points1.data, form.points2.data]
         if form.answer3.data:
             question.answer3, question.points3 = form.answer3.data, form.points3.data
-            forsum.append(form.points3)
+            forsum.append(form.points3.data)
         if form.answer4.data:
             question.answer4, question.points4 = form.answer4.data, form.points4.data
-            forsum.append(form.points4)
+            forsum.append(form.points4.data)
         if form.answer5.data:
             question.answer5, question.points5 = form.answer5.data, form.points5.data
-            forsum.append(form.points5)
+            forsum.append(form.points5.data)
         if form.answer6.data:
             question.answer6, question.points6 = form.answer6.data, form.points6.data
-            forsum.append(form.points6)
+            forsum.append(form.points6.data)
         if sum(forsum) != 100:
             return my_page_render(
                 'add_question.html',
@@ -173,6 +179,58 @@ def add_quest(quizid):
         sess.commit()
         return redirect(f'/newquiz/{quizid}')
     return my_page_render('add_question.html', form=form)
+
+
+@app.route('/newquiz/<int:quizid>/editquest/<int:questid>', methods=['GET', 'POST'])
+@login_required
+def edit_quest(quizid, questid):
+    form = AddQuest()
+    sess = db_session.create_session()
+    if request.method == 'GET':
+        question = sess.query(Questions).get(questid)
+        if question:
+            form.title.data = question.title
+            form.answer1.data, form.points1.data = question.answer1, question.points1
+            form.answer2.data, form.points2.data = question.answer2, question.points2
+            form.answer3.data, form.points3.data = question.answer3, question.points3
+            form.answer4.data, form.points4.data = question.answer4, question.points4
+            form.answer5.data, form.points5.data = question.answer5, question.points5
+            form.answer6.data, form.points6.data = question.answer6, question.points6
+            form.koeff.data = question.koeff
+        else:
+            return make_response(404, f'Unknown question id: {questid}')
+    if form.validate_on_submit():
+        question = sess.query(Questions).get(questid)
+        if question:
+            question.title = form.title.data
+            question.answer1, question.points1 = form.answer1.data, form.points1.data
+            question.answer2, question.points2 = form.answer2.data, form.points2.data
+            question.koeff = form.koeff.data
+            forsum = [form.points1.data, form.points2.data]
+            if form.answer3.data:
+                question.answer3, question.points3 = form.answer3.data, form.points3.data
+                forsum.append(form.points3.data)
+            if form.answer4.data:
+                question.answer4, question.points4 = form.answer4.data, form.points4.data
+                forsum.append(form.points4.data)
+            if form.answer5.data:
+                question.answer5, question.points5 = form.answer5.data, form.points5.data
+                forsum.append(form.points5.data)
+            if form.answer6.data:
+                question.answer6, question.points6 = form.answer6.data, form.points6.data
+                forsum.append(form.points6.data)
+            if sum(forsum) != 100:
+                return my_page_render(
+                    'add_question.html',
+                    form=form,
+                    message='Сумма очков у существующих ответов должна быть равна 100.'
+                )
+            sess.commit()
+            return redirect(f'/newquiz/{quizid}')
+        else:
+            return make_response(404, f'Unknown question id: {questid}')
+    return my_page_render('add_question.html', form=form)
+
 
 
 @app.route('/profile', methods=['GET', 'POST'])

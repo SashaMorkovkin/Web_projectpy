@@ -32,7 +32,8 @@ nav {
 
 body {
     background-image: url('/static/images/default/bg.png');
-    background-size: cover;
+    background-size: 150%;
+    background-repeat: repeat;
 }
 
 *.btn.btn-succses {

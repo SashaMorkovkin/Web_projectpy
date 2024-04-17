@@ -22,9 +22,9 @@ class AddQuiz(FlaskForm):
 class AddQuest(FlaskForm):
     title = StringField('Вопрос', validators=[DataRequired()])
     answer1 = StringField('Ответ1', validators=[DataRequired()])
-    points1 = IntegerField(validators=[DataRequired(), NumberRange(min=0, max=100)])
+    points1 = IntegerField(validators=[NumberRange(min=0, max=100)])
     answer2 = StringField('Ответ2', validators=[DataRequired()])
-    points2 = IntegerField(validators=[DataRequired(), NumberRange(min=0, max=100)])
+    points2 = IntegerField(validators=[NumberRange(min=0, max=100)])
     answer3 = StringField('Ответ3')
     points3 = IntegerField(validators=[NumberRange(min=0, max=100), Optional()])
     answer4 = StringField('Ответ4')
@@ -34,5 +34,5 @@ class AddQuest(FlaskForm):
     answer6 = StringField('Ответ6')
     points6 = IntegerField(validators=[NumberRange(min=0, max=100), Optional()])
     koeff = IntegerField("Коэффициент важности",
-                         validators=[NumberRange(min=0, max=100), Optional()])
+                         validators=[NumberRange(min=0, max=100), DataRequired()])
     submit = SubmitField('Создать')
