@@ -36,9 +36,17 @@ def my_page_render(template, **kwargs):
                            **kwargs)
 
 
+def is_author(userid, quizid):
+    sess = db_session.create_session()
+    quiz = sess.query(Quezes).get(quizid)
+    if userid == quiz.authorid or userid == 1:
+        return True
+    else:
+        return False
+
+
 @app.errorhandler(401)
 def get_login(error):
-    print(error)
     return redirect('/login')
 
 
@@ -99,7 +107,7 @@ def logout():
     return redirect("/")
 
 
-@app.route('/newquiz/<int:quizid>')
+@app.route('/newquiz/<int:quizid>', methods=['GET', 'POST'])
 @app.route('/newquiz')
 @login_required
 def add_quiz(quizid=0):
@@ -119,9 +127,28 @@ def add_quiz(quizid=0):
     else:
         form = AddQuiz()
         questions = []
+        quiz = sess.query(Quezes).get(quizid)
         if form.validate_on_submit():
-            return
-        if not sess.query(Quezes).get(quizid):
+            questsids = quiz.questions.split(',')
+            if not questsids:
+                return my_page_render('add_quiz.html',
+                                      form=form,
+                                      questions=questions,
+                                      id=quizid,
+                                      message='Добавьте хотя бы один вопрос!')
+            quiz.title = form.title.data
+            quiz.description = form.description.data
+            quiz.mode = form.mode.data
+            if form.category1.data:
+                quiz.categories.append(sess.query(Category).get(form.category1.data))
+            if form.category2.data:
+                quiz.categories.append(sess.query(Category).get(form.category2.data))
+            if form.category3.data:
+                quiz.categories.append(sess.query(Category).get(form.category3.data))
+            quiz.publicated = True
+            sess.commit()
+            return redirect('/')
+        if not quiz:
             quiz = Quezes(
                 id=quizid,
                 authorid=current_user.id,
@@ -129,12 +156,12 @@ def add_quiz(quizid=0):
             sess.add(quiz)
             sess.commit()
         else:
-            quiz = sess.query(Quezes).get(quizid)
-            print(quiz.__dict__)
             questsids = quiz.questions.split(',')
             for questid in questsids:
                 if questid:
                     questions.append(sess.query(Questions).get(questid))
+        if not is_author(current_user.id, quizid):
+            return abort(403, "It's not yours!!")
         return my_page_render('add_quiz.html', form=form, questions=questions, id=quizid)
 
 
@@ -142,6 +169,8 @@ def add_quiz(quizid=0):
 @login_required
 def add_quest(quizid):
     form = AddQuest()
+    if not is_author(current_user.id, quizid):
+        return abort(403, "It's not yours!!")
     if form.validate_on_submit():
         sess = db_session.create_session()
         question = Questions(
@@ -173,7 +202,6 @@ def add_quest(quizid):
                 message='Сумма очков у существующих ответов должна быть равна 100.'
             )
         sess.add(question)
-        sess.commit()
         quiz = sess.query(Quezes).filter(Quezes.id == quizid).first()
         quiz.questions = f'{quiz.questions}, {question.id}'
         sess.commit()
@@ -186,6 +214,8 @@ def add_quest(quizid):
 def edit_quest(quizid, questid):
     form = AddQuest()
     sess = db_session.create_session()
+    if not is_author(current_user.id, quizid):
+        return abort(403, "It's not yours!!")
     if request.method == 'GET':
         question = sess.query(Questions).get(questid)
         if question:
@@ -198,7 +228,7 @@ def edit_quest(quizid, questid):
             form.answer6.data, form.points6.data = question.answer6, question.points6
             form.koeff.data = question.koeff
         else:
-            return make_response(404, f'Unknown question id: {questid}')
+            return abort(404, f'Unknown question id: {questid}')
     if form.validate_on_submit():
         question = sess.query(Questions).get(questid)
         if question:
@@ -228,8 +258,29 @@ def edit_quest(quizid, questid):
             sess.commit()
             return redirect(f'/newquiz/{quizid}')
         else:
-            return make_response(404, f'Unknown question id: {questid}')
+            return abort(404, f'Unknown question id: {questid}')
     return my_page_render('add_question.html', form=form)
+
+
+@app.route('/newquiz/<int:quizid>/delquest/<int:questid>')
+@login_required
+def del_quest(quizid, questid):
+    if not is_author(current_user.id, quizid):
+        return abort(403, "It's not yours!!")
+    sess = db_session.create_session()
+    question = sess.query(Questions).get(questid)
+    if not question:
+        return abort(404, f'Unknown question id: {questid}')
+    quiz = sess.query(Quezes).filter(Quezes.id == quizid).first()
+    quests = [int(i) for i in quiz.questions.split(',') if i]
+    try:
+        quests.remove(questid)
+    except ValueError:
+        abort(409, f'Question[{questid}] not in this quiz[{quizid}]')
+    quiz.questions = ",".join([str(i) for i in quests])
+    sess.delete(question)
+    sess.commit()
+    return redirect(f'/newquiz/{quizid}')
 
 
 
@@ -254,7 +305,6 @@ def edit_avatar():
         return my_page_render('avatar.html', form=form)
 
 
-
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -267,7 +317,7 @@ def edit_profile():
             editform.about.data = user.about
             editform.age.data = user.age
         else:
-            abort(404)
+            abort(404, 'Unknown found your profile')
     if editform.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == current_user.id).first()
@@ -278,7 +328,7 @@ def edit_profile():
             db_sess.commit()
             return redirect('/profile')
         else:
-            abort(404)
+            abort(404, 'Unknown found your profile')
     return my_page_render('edit_profile.html', form=editform)
 
 
@@ -350,7 +400,7 @@ def user_gallery(userid):
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     if not user:
-        return make_response(404, 'unknown user id')
+        return abort(404, 'unknown user id')
     urls = []
     directory = f'static/images/{userid}'
     if os.path.isdir(directory):
