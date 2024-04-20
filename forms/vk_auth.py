@@ -8,3 +8,7 @@ class AuthForm(FlaskForm):
     login = StringField('Логин', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     submit = SubmitField('Войти')
+
+
+class Auth2(FlaskForm):
+    code = IntegerField('Код подтверждения', validators=[DataRequired()])

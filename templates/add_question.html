@@ -2,122 +2,73 @@
 
 {% block content %}
 <h1>Добавление вопроса</h1>
-<form action="" method="post" class="backgrounded-element">
+<form action="" method="post">
     {{form.hidden_tag()}}
     {{form.csrf_token}}
-    {% if message %}
-        <p class="alert alert-danger" role="alert" style="text-align: center">
-            {{ message }}
-        </p>
-    {% endif %}
     <p>
         {{form.title.label}}
-        {{form.title(class="form-control", placeholder='Обязателен')}}<br>
+        {{form.title(class="form-control")}}<br>
         {% for error in form.title.errors %}
-            <p class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
         {{form.answer1.label}}
-        {{form.answer1(class="form-control", placeholder='Обязателен')}}
+        {{form.answer1(class="form-control")}}<br>
         {% for error in form.answer1.errors %}
-            <div class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
-            </div>
-        {% endfor %}
-        {{form.points1(class="form-control", type="number")}}
-        {% for error in form.points1.errors %}
-            <div class="alert alert-danger" role="alert">
-                {{error}}
-            </div>
+            </p>
         {% endfor %}
     </p>
     <p>
         {{form.answer2.label}}
-        {{form.answer2(class="form-control", placeholder='Обязателен')}}
+        {{form.answer2(class="form-control")}}<br>
         {% for error in form.answer2.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-        {{form.points2(class="form-control")}}
-        {% for error in form.points2.errors %}
-            <p class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
         {{form.answer3.label}}
-        {{form.answer3(class="form-control", placeholder='По желанию')}}
+        {{form.answer3(class="form-control")}}<br>
         {% for error in form.answer3.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-        {{form.points3(class="form-control")}}
-        {% for error in form.points3.errors %}
-            <p class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
         {{form.answer4.label}}
-        {{form.answer4(class="form-control", placeholder='По желанию')}}
+        {{form.answer4(class="form-control")}}<br>
         {% for error in form.answer4.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-        {{form.points4(class="form-control")}}
-        {% for error in form.points4.errors %}
-            <p class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
         {{form.answer5.label}}
-        {{form.answer5(class="form-control", placeholder='По желанию')}}
+        {{form.answer5(class="form-control")}}<br>
         {% for error in form.answer5.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-        {{form.points5(class="form-control")}}
-        {% for error in form.points5.errors %}
-            <p class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>
         {{form.answer6.label}}
-        {{form.answer6(class="form-control", placeholder='По желанию')}}
+        {{form.answer6(class="form-control")}}<br>
         {% for error in form.answer6.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-        {{form.points6(class="form-control")}}
-        {% for error in form.points6.errors %}
-            <p class="alert alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-    </p>
-    <p>
-        {{form.koeff.label}}
-        {{form.koeff(class="form-control", placeholder='Обязателен')}}<br>
-        {% for error in form.koeff.errors %}
-            <p class="alert alert-danger" role="alert">
+            <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
     </p>
     <p>{{ form.submit(type="submit", class="btn btn-secondary")}}</p>
+    {{message}}
 </form>
 {% endblock %}

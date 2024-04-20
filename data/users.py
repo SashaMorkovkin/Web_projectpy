@@ -16,12 +16,12 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     age = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     about = sqlalchemy.Column(sqlalchemy.String, nullable=True, default='Не важно')
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
-    avatar = sqlalchemy.Column(sqlalchemy.String, default='images/default/avatar.jpg')
+    avatar = sqlalchemy.Column(sqlalchemy.String, default='static/images/default/avatar.jpg')
+    vk_id = sqlalchemy.Column(sqlalchemy.Integer, default=None)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     modified_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     is_private = sqlalchemy.Column(sqlalchemy.String, default='False')
     quezes = orm.relationship("Quezes", back_populates='author')
-    vkid = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)

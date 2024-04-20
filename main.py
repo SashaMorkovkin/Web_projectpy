@@ -4,7 +4,7 @@ import datetime as dt
 import vk_api
 from random import randint
 from forms.vk_auth import AuthForm
-from forms.user import LoginForm, RegisterForm, EditProfileForm, EditAvatarForm
+from forms.user import LoginForm, RegisterForm, EditProfileForm
 from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
 from data import db_session
@@ -36,17 +36,9 @@ def my_page_render(template, **kwargs):
                            **kwargs)
 
 
-def is_author(userid, quizid):
-    sess = db_session.create_session()
-    quiz = sess.query(Quezes).get(quizid)
-    if userid == quiz.authorid or userid == 1:
-        return True
-    else:
-        return False
-
-
 @app.errorhandler(401)
 def get_login(error):
+    print(error)
     return redirect('/login')
 
 
@@ -79,8 +71,8 @@ def register():
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
-        if os.path.isdir(url_for('static', filename=f'images/{user.id}')):
-            os.rmdir(url_for('static', filename=f'images/{user.id}'))
+        if os.path.isdir(f'static/images/{user.id}'):
+            os.remove(f'static/images/{user.id}')
         os.mkdir(f'static/images/{user.id}')
         return redirect('/')
     return my_page_render('register.html', form=form)
@@ -107,181 +99,42 @@ def logout():
     return redirect("/")
 
 
-@app.route('/newquiz/<int:quizid>', methods=['GET', 'POST'])
+@app.route('/newquiz/<int:quizid>')
 @app.route('/newquiz')
 @login_required
 def add_quiz(quizid=0):
     sess = db_session.create_session()
     if not quizid:
-        draft = sess.query(Quezes.id).filter(Quezes.authorid == current_user.id,
-                                             Quezes.publicated == 0).first()
-        if draft:
-            return redirect(f'/newquiz/{draft[0]}')
-        else:
-            quizesids = sess.query(Quezes.id).all()
+        quizesids = sess.query(Quezes.id).all()
+        newid = randint(1, 100001)
+        while newid in quizesids:
             newid = randint(1, 100001)
-            while (newid,) in quizesids:
-                newid = randint(1, 100001)
-            else:
-                return redirect(f'/newquiz/{newid}')
+        else:
+            return redirect(f'/newquiz/{newid}')
     else:
         form = AddQuiz()
-        questions = []
-        quiz = sess.query(Quezes).get(quizid)
-        if form.validate_on_submit():
-            questsids = quiz.questions.split(',')
-            if not questsids:
-                return my_page_render('add_quiz.html',
-                                      form=form,
-                                      questions=questions,
-                                      id=quizid,
-                                      message='Добавьте хотя бы один вопрос!')
-            quiz.title = form.title.data
-            quiz.description = form.description.data
-            quiz.mode = form.mode.data
-            if form.category1.data:
-                quiz.categories.append(sess.query(Category).get(form.category1.data))
-            if form.category2.data:
-                quiz.categories.append(sess.query(Category).get(form.category2.data))
-            if form.category3.data:
-                quiz.categories.append(sess.query(Category).get(form.category3.data))
-            quiz.publicated = True
-            sess.commit()
-            return redirect('/')
-        if not quiz:
-            quiz = Quezes(
-                id=quizid,
-                authorid=current_user.id,
-            )
-            sess.add(quiz)
-            sess.commit()
-        else:
-            questsids = quiz.questions.split(',')
-            for questid in questsids:
-                if questid:
-                    questions.append(sess.query(Questions).get(questid))
-        if not is_author(current_user.id, quizid):
-            return abort(403, "It's not yours!!")
-        return my_page_render('add_quiz.html', form=form, questions=questions, id=quizid)
+        return my_page_render('add_quiz.html', form=form, id=quizid)
 
 
 @app.route('/newquiz/<int:quizid>/newquest', methods=['GET', 'POST'])
 @login_required
 def add_quest(quizid):
     form = AddQuest()
-    if not is_author(current_user.id, quizid):
-        return abort(403, "It's not yours!!")
     if form.validate_on_submit():
-        sess = db_session.create_session()
+        db_sess = db_session.create_session()
         question = Questions(
             title=form.title.data,
             answer1=form.answer1.data,
-            points1=form.points1.data,
             answer2=form.answer2.data,
-            points2=form.points2.data,
-            koeff=form.koeff.data,
-            quizid=quizid
+            answer3=form.answer3.data,
+            answer4=form.answer4.data,
+            answer5=form.answer5.data,
+            answer6=form.answer6.data
         )
-        forsum = [form.points1.data, form.points2.data]
-        if form.answer3.data:
-            question.answer3, question.points3 = form.answer3.data, form.points3.data
-            forsum.append(form.points3.data)
-        if form.answer4.data:
-            question.answer4, question.points4 = form.answer4.data, form.points4.data
-            forsum.append(form.points4.data)
-        if form.answer5.data:
-            question.answer5, question.points5 = form.answer5.data, form.points5.data
-            forsum.append(form.points5.data)
-        if form.answer6.data:
-            question.answer6, question.points6 = form.answer6.data, form.points6.data
-            forsum.append(form.points6.data)
-        if sum(forsum) != 100:
-            return my_page_render(
-                'add_question.html',
-                form=form,
-                message='Сумма очков у существующих ответов должна быть равна 100.'
-            )
-        sess.add(question)
-        quiz = sess.query(Quezes).filter(Quezes.id == quizid).first()
-        quiz.questions = f'{quiz.questions}, {question.id}'
-        sess.commit()
-        return redirect(f'/newquiz/{quizid}')
+        question.quizid = quizid
+        db_sess.commit()
+        return redirect('/')
     return my_page_render('add_question.html', form=form)
-
-
-@app.route('/newquiz/<int:quizid>/editquest/<int:questid>', methods=['GET', 'POST'])
-@login_required
-def edit_quest(quizid, questid):
-    form = AddQuest()
-    sess = db_session.create_session()
-    if not is_author(current_user.id, quizid):
-        return abort(403, "It's not yours!!")
-    if request.method == 'GET':
-        question = sess.query(Questions).get(questid)
-        if question:
-            form.title.data = question.title
-            form.answer1.data, form.points1.data = question.answer1, question.points1
-            form.answer2.data, form.points2.data = question.answer2, question.points2
-            form.answer3.data, form.points3.data = question.answer3, question.points3
-            form.answer4.data, form.points4.data = question.answer4, question.points4
-            form.answer5.data, form.points5.data = question.answer5, question.points5
-            form.answer6.data, form.points6.data = question.answer6, question.points6
-            form.koeff.data = question.koeff
-        else:
-            return abort(404, f'Unknown question id: {questid}')
-    if form.validate_on_submit():
-        question = sess.query(Questions).get(questid)
-        if question:
-            question.title = form.title.data
-            question.answer1, question.points1 = form.answer1.data, form.points1.data
-            question.answer2, question.points2 = form.answer2.data, form.points2.data
-            question.koeff = form.koeff.data
-            forsum = [form.points1.data, form.points2.data]
-            if form.answer3.data:
-                question.answer3, question.points3 = form.answer3.data, form.points3.data
-                forsum.append(form.points3.data)
-            if form.answer4.data:
-                question.answer4, question.points4 = form.answer4.data, form.points4.data
-                forsum.append(form.points4.data)
-            if form.answer5.data:
-                question.answer5, question.points5 = form.answer5.data, form.points5.data
-                forsum.append(form.points5.data)
-            if form.answer6.data:
-                question.answer6, question.points6 = form.answer6.data, form.points6.data
-                forsum.append(form.points6.data)
-            if sum(forsum) != 100:
-                return my_page_render(
-                    'add_question.html',
-                    form=form,
-                    message='Сумма очков у существующих ответов должна быть равна 100.'
-                )
-            sess.commit()
-            return redirect(f'/newquiz/{quizid}')
-        else:
-            return abort(404, f'Unknown question id: {questid}')
-    return my_page_render('add_question.html', form=form)
-
-
-@app.route('/newquiz/<int:quizid>/delquest/<int:questid>')
-@login_required
-def del_quest(quizid, questid):
-    if not is_author(current_user.id, quizid):
-        return abort(403, "It's not yours!!")
-    sess = db_session.create_session()
-    question = sess.query(Questions).get(questid)
-    if not question:
-        return abort(404, f'Unknown question id: {questid}')
-    quiz = sess.query(Quezes).filter(Quezes.id == quizid).first()
-    quests = [int(i) for i in quiz.questions.split(',') if i]
-    try:
-        quests.remove(questid)
-    except ValueError:
-        abort(409, f'Question[{questid}] not in this quiz[{quizid}]')
-    quiz.questions = ",".join([str(i) for i in quests])
-    sess.delete(question)
-    sess.commit()
-    return redirect(f'/newquiz/{quizid}')
-
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -290,19 +143,14 @@ def my_profile():
     return my_page_render('my_profile.html')
 
 
-@app.route('/set_avatar', methods=['POST', 'GET'])
-def edit_avatar():
-    form = EditAvatarForm()
-    if form.validate_on_submit():
-        print(form.image.data)
-        form.image.data.save(f'static/images/{current_user.id}/avatar.png')
-        sess = db_session.create_session()
-        user = sess.get(User, current_user.id)
-        user.avatar = f'images/{current_user.id}/avatar.png'
-        sess.commit()
-        return redirect('/profile')
-    else:
-        return my_page_render('avatar.html', form=form)
+@app.route('/photo', methods=['POST', 'GET'])
+def change_avatar():
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.id == current_user.id).first()
+        image = request.files['file']
+        image.save(f'static/images/default/avatar.jpg')
+        user.avatar = f'static/images/default/avatar.jpg'
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
@@ -317,7 +165,7 @@ def edit_profile():
             editform.about.data = user.about
             editform.age.data = user.age
         else:
-            abort(404, 'Unknown found your profile')
+            abort(404)
     if editform.validate_on_submit():
         db_sess = db_session.create_session()
         user = db_sess.query(User).filter(User.id == current_user.id).first()
@@ -328,7 +176,7 @@ def edit_profile():
             db_sess.commit()
             return redirect('/profile')
         else:
-            abort(404, 'Unknown found your profile')
+            abort(404)
     return my_page_render('edit_profile.html', form=editform)
 
 
@@ -358,9 +206,9 @@ def auth():
         print(response)
         if response[0]['status']:
             user.about = response[0]['status']
-        if response[0]['crop_photo']['photo']['sizes'][-2]['url']:
-            user.avatar = response[0]['crop_photo']['photo']['sizes'][-2]['url']
+        user.avatar = response[0]['crop_photo']['photo']['sizes'][-2]['url']
         user.name = f"{response[0]['first_name']} {response[0]['last_name']}"
+        user.vk_id = response[0]['id']
         db_sess.commit()
         return redirect('/profile')
     return my_page_render('vk_auth.html', form=form)
@@ -386,7 +234,7 @@ def search():
 @login_required
 def my_gallery():
     urls = []
-    directory = url_for('static', filename=f'images/{current_user.id}')
+    directory = f'static/images/{current_user.id}'
     if os.path.isdir(directory):
         for image in os.listdir(directory):
             urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
@@ -400,7 +248,7 @@ def user_gallery(userid):
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     if not user:
-        return abort(404, 'unknown user id')
+        return make_response(404, 'unknown user id')
     urls = []
     directory = f'static/images/{userid}'
     if os.path.isdir(directory):
