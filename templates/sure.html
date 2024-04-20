@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Подтвердить</h2>
+        <form method="post" class="backgrounded-element">
+            <label for="sure">Подтверждаю удаление опроса {{ id }}</label>
+            <button class="btn btn-danger" type="submit" name="sure">Подтвердить</button>
+        </form>
+{% endblock %}

@@ -25,13 +25,15 @@
         </button>
     </div>
     {% for quiz in quizes %}
-        <div class="card" style="width: 18rem;">
-            <img src="{{ url_for('static', filename=quiz.cover) }}" class="card-img-top" alt="Обложка">
-            <div class="card-body">
-            <h5 class="card-title">{{ quiz.title }}</h5>
-                <p class="card-text">{{ quiz.description }}</p>
-                <a href="/quiz/{{ quiz.id }}" class="btn btn-primary">Открыть тест</a>
+        {% if quiz.publicated %}
+            <div class="card" style="width: 18rem;">
+                <img src="{{ url_for('static', filename=quiz.cover) }}" class="card-img-top" alt="Обложка">
+                <div class="card-body">
+                <h5 class="card-title">{{ quiz.title }}</h5>
+                    <p class="card-text">{{ quiz.description }}</p>
+                    <a href="/quiz/{{ quiz.id }}" class="btn btn-primary">Открыть тест</a>
+                </div>
             </div>
-        </div>
+        {% endif %}
     {% endfor %}
 {% endblock %}
