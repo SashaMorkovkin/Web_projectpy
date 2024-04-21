@@ -19,6 +19,7 @@ from data.users import User
 from data.questions import Questions
 from data.category import Category
 from data.quezes import Quezes
+import shutil
 
 
 def my_page_render(template, **kwargs):
@@ -34,6 +35,8 @@ def my_page_render(template, **kwargs):
 
 
 def make_avatar():
+    if os.path.isdir(f"Admin/PycharmProjects/Web_projectpy/static/images/{current_user.id}"):
+        shutil.rmtree(f"Admin/PycharmProjects/Web_projectpy/static/images/{current_user.id}")
     image = Image.open(
         f'{os.curdir}/{url_for("static", filename=f"images/{current_user.id}/preavatar.png")}')
     width, height = image.size

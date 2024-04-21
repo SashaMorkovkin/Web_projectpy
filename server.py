@@ -1,14 +1,14 @@
 from main import main
-#from vk_bot.vk_bot_api import bot
+from vk_bot.vk_bot_api import bot
 import threading
 
 
 def start_site():
     serv = threading.Thread(target=main)
-    #vkbot = threading.Thread(target=bot, daemon=True)
+    vkbot = threading.Thread(target=bot, daemon=True)
     serv.start()
-    #vkbot.start()
-    #vkbot.join()
+    vkbot.start()
+    vkbot.join()
 
 
 if __name__ == '__main__':

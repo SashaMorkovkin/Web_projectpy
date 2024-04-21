@@ -29,9 +29,10 @@ def load_user(user_id):
 
 
 @app.route('/')
+@login_required
 def mainpage():
     sess = db_session.create_session()
-    quizes = sess.query(Quezes).filter(Quezes.authorid == current_user.id)
+    quizes = sess.query(Quezes).filter(Quezes.authorid == current_user.id).all()
     return my_page_render('first_list.html', quizes=quizes)
 
 
