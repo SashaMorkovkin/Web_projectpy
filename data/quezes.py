@@ -18,4 +18,8 @@ class Quezes(SqlAlchemyBase, SerializerMixin):
                                   backref="quezes")
     mode = sqlalchemy.Column(sqlalchemy.String)
     questions = orm.relationship('Questions', back_populates='quiz')
+    passed = sqlalchemy.Column(sqlalchemy.Integer, default=0)
+    goodend = sqlalchemy.Column(sqlalchemy.String, default='SIGMAAAA!!!')
+    badend = sqlalchemy.Column(sqlalchemy.String, default='Game over.')
+    pointsfge = sqlalchemy.Column(sqlalchemy.Integer)
     publicated = sqlalchemy.Column(sqlalchemy.Boolean, default=False)

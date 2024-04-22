@@ -5,76 +5,87 @@
 <form action="" method="post" class="backgrounded-element">
     {{form.hidden_tag()}}
     {{form.csrf_token}}
-    <div class="row align-items-center">
-        <div class="col" style="max-width: 18rem; max-height: 18rem; border: 3px solid green; padding: 0 0 0 0">
-            <img src="{{url_for('static', filename=quiz.cover)}}" alt="Обложка" style="max-width: 100%; max-height: 100%">
+    {% if message %}
+        <div class="row" style="margin: 3px 5% 3px 5%">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{message}}
+                </div>
+            </div>
         </div>
-        <div class="col">
-            <div class="dropdown" style="margin-left: 1%" id="drop">
-                <a class="btn btn-menu dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    {% endif %}
+    <div class="row align-items-center" style="margin: 3px 5% 3px 5%">
+        <div class="col" style="max-width: 18rem">
+            <img src="{{url_for('static', filename=quiz.cover)}}" alt="Обложка" style="max-width: 100%; max-height: 18rem; border: 3px solid green; padding: 0 0 0 0; max-height: 100%">
+            <div class="dropdown" id="drop">
+                <a class="btn btn-succses dropdown-toggle" href="#" style="width: 100%" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     Выбрать обложку
                 </a>
-                <ul class="dropdown-menu">
-                {% for url in photos %}
-                    <li><a class="dropdown-item" href="new_quiz/{{ quiz.id }}/select_cover/{{url}}"><img src="{{url_for('static', filename=url)}}" style="max-width: 160px"></a></li>
-                {% endfor %}
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="/upload_photo">Загрузить новую</a></li>
+                <ul class="dropdown-menu" style="max-height: 18rem; overflow-y:auto">
+                    <li><div class="alert alert-warning" style="max-width: 100%; margin: 0 16px 0 16px; padding: 2px 2px 2px 2px;">После выбора обложки все поля формы обнулятся. Рекомендуем сохранить тест как черновик</div></li>
+                    <li><hr class="dropdown-divider"></li>
+                    {% for url in photos %}
+                        <li><a class="dropdown-item" href="{{ quiz.id }}/select_cover/{{ url['number'] }}"><img src="{{url_for('static', filename=url['url'])}}" style="max-width: 100%"></a></li>
+                    {% endfor %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/upload_photo">Загрузить новую</a></li>
                 </ul>
             </div>
-            <div class="alert alert-warning">
-                <label for="drop">После выбора обложки все поля формы обнулятся. Рекомендуем сохранить тест как черновик</label>
-            </div>
+        </div>
+        <div class="col">
+            <p>
+                <h5>{{form.title.label}}</h5>
+                {{form.title(class="form-control")}}
+                {% for error in form.title.errors %}
+                    <p class="alert-danger" role="alert">
+                        {{error}}
+                    </p>
+                {% endfor %}
+            </p>
+            <p>
+                <h5>{{form.description.label}}</h5>
+                {{form.description(class="form-control", style="resize: none", rows="7")}}
+                {% for error in form.description.errors %}
+                    <p class="alert-danger" role="alert">
+                        {{error}}
+                    </p>
+                {% endfor %}
+            </p>
         </div>
     </div>
-    <p>
-        <h5>{{form.title.label}}</h5>
-        {{form.title(class="form-control")}}
-        {% for error in form.title.errors %}
+    <div class="row" style="margin: 3px 5% 3px 5%">
+        <div class="col">
+            <h5>{{form.category1.label}}</h5>
+            {{form.category1(class="form-control")}}
+            {% for error in form.category1.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
-        {% endfor %}
-    </p>
-    <p>
-        <h5>{{form.description.label}}</h5>
-        {{form.description(class="form-control", style="resize: none", rows="4")}}
-        {% for error in form.description.errors %}
+            {% endfor %}
+        </div>
+        <div class="col">
+            <h5>{{form.category2.label}}</h5>
+            {{form.category2(class="form-control")}}
+            {% for error in form.category2.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
-        {% endfor %}
-    </p>
-    <p>
-        <h5>{{form.category1.label}}</h5>
-        {{form.category1(class="form-control")}}
-        {% for error in form.category1.errors %}
+            {% endfor %}
+        </div>
+        <div class="col">
+            <h5>{{form.category3.label}}</h5>
+            {{form.category3(class="form-control")}}
+            {% for error in form.category3.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
-        {% endfor %}
-    </p>
-    <p>
-        <h5>{{form.category2.label}}</h5>
-        {{form.category2(class="form-control")}}
-        {% for error in form.category2.errors %}
-            <p class="alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-    </p>
-    <p>
-        <h5>{{form.category3.label}}</h5>
-        {{form.category3(class="form-control")}}
-        {% for error in form.category3.errors %}
-            <p class="alert-danger" role="alert">
-                {{error}}
-            </p>
-        {% endfor %}
-    </p>
-    <p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row" style="margin: 3px 5% 3px 5%">
+    <div class="col">
         <h5>Вопросы:</h5>
-        <div class="container alert alert-light">
+        <div class="alert alert-light form-control">
             {% for i in range(quiz.questions|length // 2 + 1) %}
                 <div class="row align-items-center">
                     {% for quest in quiz.questions[i * 2: (i + 1) * 2] %}
@@ -129,25 +140,64 @@
             {% endfor %}
         <div class="row align-items-center">
             <a class="btn btn-success" href="/newquiz/{{ quiz.id }}/newquest"> Добавить вопрос </a>
+            <div class="alert alert-warning" style="margin-bottom: 0; text-align: center; padding: 6px 0 6px 0">
+                Все поля формы обнулятся. Рекомендуем сохранить тест как черновик
+            </div>
         </div>
         </div>
-    </p>
-    <p>
-        <h5>{{form.mode.label}}</h5>
-        {{form.mode(class="form-control")}}
-        {% for error in form.mode.errors %}
+    </div>
+    </div>
+    <div class="row" style="margin: 3px 5% 3px 5%">
+        <div class="col">
+            <h5>{{form.badend.label}}</h5>
+            {{form.badend(class="form-control")}}
+            {% for error in form.badend.errors %}
             <p class="alert-danger" role="alert">
                 {{error}}
             </p>
         {% endfor %}
-    </p>
-    <p>{{ form.submit(type="submit", class="btn btn-primary")}}</p>
-    <p>{{ form.save(type="submit", class="btn btn-secondary")}}</p>
-    <a class="btn btn-primary" href="/newquiz/{{ quiz.id }}/delete">Удалить тест</a>
-    {% if message %}
-        <div class="alert alert-danger">
-            {{message}}
         </div>
-    {% endif %}
+        <div class="col">
+            <h5>{{form.pointsfge.label}}</h5>
+            {{form.pointsfge(class="form-control", type="range", max=points, list='markers', oninput="this.nextElementSibling.value = this.value")}}
+            <output class="h6">0</output>
+            {% for error in form.pointsfge.errors %}
+                <p class="alert-danger" role="alert">
+                    {{error}}
+                </p>
+            {% endfor %}
+        </div>
+        <div class="col">
+            <h5>{{form.goodend.label}}</h5>
+            {{form.goodend(class="form-control")}}
+            {% for error in form.goodend.errors %}
+            <p class="alert-danger" role="alert">
+                {{error}}
+            </p>
+        {% endfor %}
+        </div>
+    </div>
+    <div class="row" style="margin: 3px 5% 3px 5%">
+        <div class="col">
+            <h5>{{form.mode.label}}</h5>
+            {{form.mode(class="form-control")}}
+            {% for error in form.mode.errors %}
+                <p class="alert-danger" role="alert">
+                    {{error}}
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row" style="margin: 3px 5% 3px 5%">
+        <div class="col">
+            {{ form.submit(type="submit", class="btn btn-primary", style="width: 100%")}}
+        </div>
+        <div class="col">
+            {{ form.save(type="submit", class="btn btn-success", style="width: 100%")}}
+        </div>
+        <div class="col">
+            <a class="btn btn-danger" href="/delquiz/{{ quiz.id }}" style="width: 100%">Удалить тест</a>
+        </div>
+    </div>
 </form>
 {% endblock %}

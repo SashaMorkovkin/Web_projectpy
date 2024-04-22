@@ -1,6 +1,7 @@
 from wtforms.validators import DataRequired, Length, NumberRange, Optional
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, SelectField, TextAreaField, IntegerField
+from wtforms import (StringField, SubmitField, SelectField, TextAreaField, IntegerField,
+                     IntegerRangeField)
 
 
 class AddQuiz(FlaskForm):
@@ -14,6 +15,9 @@ class AddQuiz(FlaskForm):
     category1 = SelectField()
     category2 = SelectField()
     category3 = SelectField()
+    goodend = StringField('Сообщение при хорошей концовке:')
+    badend = StringField('Сообщение при плохой концовке:')
+    pointsfge = IntegerRangeField('Очков для хорошей концовки')
     submit = SubmitField('Опубликовать')
     save = SubmitField('Сохранить')
 

@@ -1,28 +1,18 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h4>Первая страница сайта</h4>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    <div id="carouselExample" class="carousel slide">
+    <div id="carouselExampleSlidesOnly" class="carousel slide carousel-fade" data-bs-ride="carousel">
         <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="{{ url_for('static', filename='images/default/avatar.jpg') }}" class="d-block w-100" alt="...">
+            <div class="carousel-item active" data-bs-interval="5000">
+                <img src="{{ url_for('static', filename='images/default/motivation1.jpg') }}" class="d-block w-100" alt="...">
             </div>
-            <div class="carousel-item">
-                 <img src="{{ url_for('static', filename='images/default/avatar.jpg') }}" class="d-block w-100" alt="...">
+            <div class="carousel-item" data-bs-interval="5000">
+                <img src="{{ url_for('static', filename='images/default/motivation2.jpg') }}" class="d-block w-100" alt="...">
             </div>
-            <div class="carousel-item">
-                 <img src="{{ url_for('static', filename='images/default/avatar.jpg') }}" class="d-block w-100" alt="...">
+            <div class="carousel-item" data-bs-interval="5000">
+                <img src="{{ url_for('static', filename='images/default/motivation3.jpg') }}" class="d-block w-100" alt="...">
             </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Предыдущий</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Следующий</span>
-        </button>
     </div>
     {% for quiz in quizes %}
         {% if quiz.publicated %}
@@ -31,7 +21,13 @@
                 <div class="card-body">
                 <h5 class="card-title">{{ quiz.title }}</h5>
                     <p class="card-text">{{ quiz.description }}</p>
+                    {% for cat in quiz.categories %}
+                        <p class="card-text">{{ cat.name }}</p>
+                    {% endfor %}
                     <a href="/quiz/{{ quiz.id }}" class="btn btn-primary">Открыть тест</a>
+                    {% if quiz.authorid == current_user.id%}
+                        <a href="/newquiz/{{ quiz.id }}/delete" class="btn btn-danger">Удалить</a>
+                    {% endif %}
                 </div>
             </div>
         {% endif %}

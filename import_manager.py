@@ -5,6 +5,7 @@ from PIL import Image
 
 from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from wtforms.validators import NumberRange
 
 import vk_api
 
@@ -35,8 +36,6 @@ def my_page_render(template, **kwargs):
 
 
 def make_avatar():
-    if os.path.isdir(f"Admin/PycharmProjects/Web_projectpy/static/images/{current_user.id}"):
-        shutil.rmtree(f"Admin/PycharmProjects/Web_projectpy/static/images/{current_user.id}")
     image = Image.open(
         f'{os.curdir}/{url_for("static", filename=f"images/{current_user.id}/preavatar.png")}')
     width, height = image.size

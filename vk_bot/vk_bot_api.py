@@ -16,6 +16,22 @@ morph = pymorphy2.MorphAnalyzer()
 com = morph.parse('опрос')[0]
 
 
+def create_message(vk, event):
+    is_member = vk.groups.isMember(group_id=225254028, user_id=event.obj.message['from_id'])
+    name = vk.users.get(user_id=event.obj.message['from_id'], fields='first_name')[0]['first_name']
+    if not is_member:
+        vk.messages.send(user_id=event.obj.message['from_id'],
+                         message=f"Привет, {name}! Для использования бота нужно подписаться на группу👆",
+                         random_id=random.randint(0, 2 ** 64))
+    else:
+        db_sess = db_session.create_session()
+        user = db_sess.query(User).filter(User.vk_id == event.obj.message['from_id']).first()
+        print(user)
+        quezes = db_sess.query(Quezes).filter(Quezes.authorid == user.id).all()
+        print(quezes)
+
+
+
 def bot():
     f_toggle: bool = False
     vk_session = vk_api.VkApi(token=TOKEN)

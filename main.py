@@ -29,10 +29,9 @@ def load_user(user_id):
 
 
 @app.route('/')
-@login_required
 def mainpage():
     sess = db_session.create_session()
-    quizes = sess.query(Quezes).filter(Quezes.authorid == current_user.id).all()
+    quizes = sess.query(Quezes).all()
     return my_page_render('first_list.html', quizes=quizes)
 
 
@@ -52,8 +51,8 @@ def register():
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
-        if os.path.isdir(url_for('static', filename=f'images/{user.id}')):
-            os.rmdir(url_for('static', filename=f'images/{user.id}'))
+        if os.path.isdir(f'{os.curdir}/static/images/{user.id}'):
+            shutil.rmtree(f"{os.curdir}/static/images/{user.id}")
         os.mkdir(f'static/images/{user.id}')
         return redirect('/')
     return my_page_render('register.html', form=form)
@@ -104,6 +103,9 @@ def add_quiz(quizid=0):
             quiz.title = form.title.data
             quiz.description = form.description.data
             quiz.mode = form.mode.data
+            quiz.pointsfge = form.pointsfge.data
+            quiz.goodend = form.goodend.data
+            quiz.badend = form.badend.data
             quiz.categories.clear()
             if int(form.category1.data):
                 quiz.categories.append(sess.query(Category).get(form.category1.data))
@@ -124,6 +126,9 @@ def add_quiz(quizid=0):
             quiz.title = form.title.data
             quiz.description = form.description.data
             quiz.mode = form.mode.data
+            quiz.pointsfge = form.pointsfge.data
+            quiz.goodend = form.goodend.data
+            quiz.badend = form.badend.data
             quiz.categories.clear()
             if int(form.category1.data):
                 quiz.categories.append(sess.query(Category).get(form.category1.data))
@@ -145,6 +150,9 @@ def add_quiz(quizid=0):
         else:
             form.title.data = quiz.title
             form.description.data = quiz.description
+            form.pointsfge.data = quiz.pointsfge
+            form.goodend.data = quiz.goodend
+            form.badend.data = quiz.badend
             if len(quiz.categories) > 0:
                 form.category1.data = str(quiz.categories[0].id)
             if len(quiz.categories) > 1:
@@ -156,8 +164,24 @@ def add_quiz(quizid=0):
         photos = []
         directory = f'static/images/{current_user.id}'
         for image in os.listdir(directory):
-            photos.append(f'{directory[7:]}/{image}')
-        return my_page_render('add_quiz.html', form=form, quiz=quiz, photos=photos)
+            photos.append({'url': f'{directory[7:]}/{image}', 'number': str(image)})
+            print(photos)
+        points = sum([i.koeff for i in quiz.questions])
+        return my_page_render('add_quiz.html', form=form, quiz=quiz, photos=photos,
+                              points=points)
+
+
+@app.route('/newquiz/<int:quizid>/select_cover/<photo>')
+def select_cover(quizid, photo):
+    if not is_author(current_user.id, quizid):
+        return abort(403, "It's not yours!!")
+    sess = db_session.create_session()
+    quiz = sess.query(Quezes).get(quizid)
+    if photo:
+        quiz.cover = f'images/{current_user.id}/{photo}'
+        sess.commit()
+        return redirect(f'/newquiz/{quizid}')
+
 
 
 @app.route('/newquiz/<int:quizid>/delete', methods=['GET', 'POST'])
