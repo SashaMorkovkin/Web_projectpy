@@ -318,7 +318,7 @@ def edit_avatar():
         form.image.data.save(f'static/images/{current_user.id}/preavatar.png')
         make_avatar()
         os.remove(
-            f'{os.curdir}/{url_for("static", filename=f"images/{current_user.id}/preavatar.png")}')
+            f'{os.curdir}/{f"static/images/{current_user.id}/preavatar.png"}')
         sess = db_session.create_session()
         user = sess.get(User, current_user.id)
         user.avatar = f'images/{current_user.id}/avatar.png'
@@ -381,7 +381,7 @@ def auth():
         print(response)
         if response[0]['status']:
             user.about = response[0]['status']
-        user.avatar = response[0]['crop_photo']['photo']['sizes'][-2]['url']
+        user.avatar = f"{response[0]['crop_photo']['photo']['sizes'][-2]['url']}"
         user.name = f"{response[0]['first_name']} {response[0]['last_name']}"
         user.vk_id = response[0]['id']
         db_sess.commit()

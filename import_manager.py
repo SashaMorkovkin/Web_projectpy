@@ -3,6 +3,7 @@ import datetime as dt
 from random import randint
 from PIL import Image
 
+import requests
 from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from wtforms.validators import NumberRange
