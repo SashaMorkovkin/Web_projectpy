@@ -12,8 +12,10 @@ def is_author(userid: int, quizid: int) -> bool:
     sess = db_session.create_session()
     quiz = sess.query(Quezes).get(quizid)
     if userid == quiz.authorid or userid == 1:
+        sess.close()
         return True
     else:
+        sess.close()
         return False
 
 
@@ -31,8 +33,21 @@ def load_user(user_id):
 @app.route('/')
 def mainpage():
     sess = db_session.create_session()
-    quizes = sess.query(Quezes).all()
-    return my_page_render('first_list.html', quizes=quizes)
+    if current_user.is_authenticated:
+        followersid = [i.id for i in current_user.followers]
+        white_list = sess.query(Quezes).filter(
+            (Quezes.publicated) &
+            ((Quezes.mode == 'forall') |
+             (Quezes.authorid == current_user.id) |
+             (( Quezes.authorid.in_(followersid) ) & (Quezes.mode == 'forfriends'))))
+        followingsid = [i.id for i in current_user.following]
+        by_friends = white_list.filter(Quezes.authorid.in_(followingsid))
+    else:
+        white_list = sess.query(Quezes).filter(Quezes.publicated & (Quezes.mode == 'forall'))
+        by_friends = []
+    most_passed = white_list.order_by(Quezes.passed).limit(10).all()
+    sess.close()
+    return my_page_render('first_list.html', most_passed=most_passed, by_friends=by_friends)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -48,12 +63,16 @@ def register():
             email=form.email.data,
         )
         user.set_password(form.password.data)
+        user.avatar = f'images/{current_user.id}/avatar.png'
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
         if os.path.isdir(f'{os.curdir}/static/images/{user.id}'):
             shutil.rmtree(f"{os.curdir}/static/images/{user.id}")
         os.mkdir(f'static/images/{user.id}')
+        shutil.copyfile(f"{os.curdir}/static/images/default/avatar.jpg",
+                        f"{os.curdir}/static/images/{current_user.id}/avatar.png")
+        db_sess.close()
         return redirect('/')
     return my_page_render('register.html', form=form)
 
@@ -67,6 +86,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
+        db_sess.close()
         return my_page_render('login.html', message="Неправильный логин или пароль",
                               form=form)
     return my_page_render('login.html', form=form)
@@ -115,9 +135,9 @@ def add_quiz(quizid=0):
                     form.category3.data != form.category1.data):
                 quiz.categories.append(sess.query(Category).get(form.category3.data))
             sess.commit()
+            sess.close()
             return redirect(f'/newquiz/{quizid}')
         if form.validate_on_submit():
-            print(form.save.data)
             if not quiz.questions:
                 return my_page_render('add_quiz.html',
                                       form=form,
@@ -138,7 +158,9 @@ def add_quiz(quizid=0):
                     form.category3.data != form.category1.data):
                 quiz.categories.append(sess.query(Category).get(form.category3.data))
             quiz.publicated = True
+            quiz.create = dt.datetime.now()
             sess.commit()
+            sess.close()
             return redirect('/')
         if not quiz:
             quiz = Quezes(
@@ -160,12 +182,12 @@ def add_quiz(quizid=0):
             if len(quiz.categories) > 2:
                 form.category3.data = str(quiz.categories[2].id)
         if not is_author(current_user.id, quizid):
+            sess.close()
             return abort(403, "It's not yours!!")
         photos = []
         directory = f'static/images/{current_user.id}'
         for image in os.listdir(directory):
             photos.append({'url': f'{directory[7:]}/{image}', 'number': str(image)})
-            print(photos)
         points = sum([i.koeff for i in quiz.questions])
         return my_page_render('add_quiz.html', form=form, quiz=quiz, photos=photos,
                               points=points)
@@ -180,18 +202,19 @@ def select_cover(quizid, photo):
     if photo:
         quiz.cover = f'images/{current_user.id}/{photo}'
         sess.commit()
+        sess.close()
         return redirect(f'/newquiz/{quizid}')
 
 
 
-@app.route('/newquiz/<int:quizid>/delete', methods=['GET', 'POST'])
-@app.route('/newquiz')
+@app.route('/delquiz/<int:quizid>', methods=['GET', 'POST'])
 @login_required
 def del_quiz(quizid):
     if request.method == "POST":
         sess = db_session.create_session()
         sess.delete(sess.query(Quezes).get(quizid))
         sess.commit()
+        sess.close()
         return redirect('/')
     return my_page_render('sure.html', id=quizid)
 
@@ -305,6 +328,25 @@ def del_quest(quizid, questid):
     return redirect(f'/newquiz/{quizid}')
 
 
+@app.route('/quiz/<int:quizid>/info')
+def quizinfo(quizid):
+    sess = db_session.create_session()
+    quiz = sess.query(Quezes).get(quizid)
+    if not quiz:
+        return abort(404, f'Quiz {quizid} not found.')
+    return my_page_render('quizinfo.html', quiz=quiz)
+
+
+@app.route('/quiz/<int:quizid>', methods=["POST", "GET"])
+def quiz(quizid):
+    sess = db_session.create_session()
+    quiz = sess.query(Quezes).get(quizid)
+    if not quiz:
+        return abort(404, f'Quiz {quizid} not found.')
+    return my_page_render('quiz.html', quiz=quiz)
+
+
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def my_profile():
@@ -353,6 +395,17 @@ def edit_profile():
         else:
             abort(404, 'Unknown found your profile')
     return my_page_render('edit_profile.html', form=editform)
+
+
+@login_required
+@app.route('/subscribe/<userid>')
+def subscribe(userid):
+    sess = db_session.create_session()
+    user = sess.query(User).get(userid)
+    user.followers.append(sess.query(User).get(current_user.id))
+    print(current_user.following)
+    sess.commit()
+    return redirect('/')
 
 
 def auth_handler():
@@ -460,6 +513,7 @@ def main():
     categories = [(0, '')]
     for cat in sess.query(Category).all():
         categories.append((cat.id, cat.name))
+    sess.close()
     AddQuiz.set_categories(categories)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

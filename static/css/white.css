@@ -1,6 +1,8 @@
 *.backgrounded-element {
     margin-left: auto;
     margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
     max-width: 100%;
     background-color: #e2ee83;
     border: 3px solid #bfd833;
@@ -43,4 +45,14 @@ body {
 *.btn.btn-succses:hover {
     background-color: #bfd833;
     border: 3px dashed #a2b827;
+}
+
+*.badge.category-badge {
+    background-color: #bfd833;
+    border: 3px solid #a2b827;
+    text-decoration: none
+}
+
+*.badge.category-badge:hover {
+    background-color: #a2b827;
 }

@@ -6,4 +6,5 @@ flask
 flask_wtf
 sqlalchemy_serializer
 flask_login
+pymorphy2
 git+https://github.com/M1h4n1k/vk_api_fix_auth.git

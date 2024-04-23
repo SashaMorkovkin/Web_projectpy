@@ -23,3 +23,4 @@ class Quezes(SqlAlchemyBase, SerializerMixin):
     badend = sqlalchemy.Column(sqlalchemy.String, default='Game over.')
     pointsfge = sqlalchemy.Column(sqlalchemy.Integer)
     publicated = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
+    create = sqlalchemy.Column(sqlalchemy.DateTime)
