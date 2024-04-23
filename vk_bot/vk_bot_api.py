@@ -52,6 +52,7 @@ def bot():
             print(event.obj.message['from_id'])
             if 'инфо' in event.obj.message['text'].lower():
                     us = db_sess.query(User).filter(User.vk_id == event.obj.message['from_id']).first()
+                    print(us)
                     if us:
                         user_id = us.id
                         quizes = db_sess.query(Quezes).filter(Quezes.authorid == user_id).all()

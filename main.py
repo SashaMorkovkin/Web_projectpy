@@ -418,8 +418,13 @@ def auth_handler():
 @login_required
 def auth():
     form = AuthForm()
+    message = ''
     if form.validate_on_submit():
         db_sess = db_session.create_session()
+        users = db_sess.query(User).filter(User.vk_id == current_user.vk_id).all()
+        if users and current_user.vk_id:
+            message = 'Пользователь уже существует'
+            return my_page_render('vk_auth.html', form=form, message=message)
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         login = form.login.data
         password = form.password.data
@@ -439,7 +444,7 @@ def auth():
         user.vk_id = response[0]['id']
         db_sess.commit()
         return redirect('/profile')
-    return my_page_render('vk_auth.html', form=form)
+    return my_page_render('vk_auth.html', form=form, message=message)
 
 
 @app.route('/search', methods=['GET', 'POST'])
