@@ -63,16 +63,16 @@ def register():
             email=form.email.data,
         )
         user.set_password(form.password.data)
-        user.avatar = f'images/{current_user.id}/avatar.png'
         db_sess.add(user)
         db_sess.commit()
         login_user(user, remember=True)
-        if os.path.isdir(f'{os.curdir}/static/images/{user.id}'):
-            shutil.rmtree(f"{os.curdir}/static/images/{user.id}")
-        os.mkdir(f'static/images/{user.id}')
+        user.avatar = f'images/{current_user.id}/avatar.png'
+        db_sess.commit()
+        if os.path.isdir(f'{os.curdir}/static/images/{current_user.id}'):
+            shutil.rmtree(f"{os.curdir}/static/images/{current_user.id}")
+        os.mkdir(f'static/images/{current_user.id}')
         shutil.copyfile(f"{os.curdir}/static/images/default/avatar.jpg",
                         f"{os.curdir}/static/images/{current_user.id}/avatar.png")
-        db_sess.close()
         return redirect('/')
     return my_page_render('register.html', form=form)
 
