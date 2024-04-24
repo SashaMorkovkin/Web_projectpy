@@ -56,8 +56,14 @@ def bot():
                     if us:
                         user_id = us.id
                         quizes = db_sess.query(Quezes).filter(Quezes.authorid == user_id).all()
+                        passes = 0
+                        for i in quizes:
+                            passes += i.passed
                         vk.messages.send(user_id=event.obj.message['from_id'],
                                          message=f"{vk.users.get(user_id=event.obj.message['from_id'], fields='first_name')[0]['first_name']}, ты создал {len(quizes)} {com.make_agree_with_number(len(quizes)).word}.",
+                                         random_id=random.randint(0, 2 ** 64))
+                        vk.messages.send(user_id=event.obj.message['from_id'],
+                                         message=f"Твои опросы прошли {passes} раз.",
                                          random_id=random.randint(0, 2 ** 64))
                     else:
                         vk.messages.send(user_id=event.obj.message['from_id'],

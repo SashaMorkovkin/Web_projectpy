@@ -32,6 +32,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     age = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
     about = sqlalchemy.Column(sqlalchemy.String, nullable=True, default='Не важно')
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)
+    vk_photo = sqlalchemy.Column(sqlalchemy.Boolean, default=False)
     avatar = sqlalchemy.Column(sqlalchemy.String)
     vk_id = sqlalchemy.Column(sqlalchemy.Integer, default=None)
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)

@@ -28,7 +28,7 @@ def get_login(error):
 @app.errorhandler(404)
 def not_found(error):
     if ('The requested URL was not found on the server. If you entered the URL manually please '
-            'check your spelling and try again.') == error.description:
+        'check your spelling and try again.') == error.description:
         return my_page_render('error_handler.html', message='WORK IN PROGRESS')
     else:
         return my_page_render('error_handler.html', message=error)
@@ -427,6 +427,7 @@ def edit_avatar():
             f'{os.curdir}/static/images/{current_user.id}/preavatar.png')
         sess = db_session.create_session()
         user = sess.get(User, current_user.id)
+        user.vk_photo = False
         user.avatar = f'images/{current_user.id}/avatar.png'
         sess.commit()
         return redirect('/profile')
@@ -483,8 +484,16 @@ def unsubscribe(userid):
     return redirect(f'/profile/{userid}')
 
 
+def vk_auth():
+    form = Auth2()
+    if form.validate_on_submit():
+        key = form.key.data
+        return key
+    return my_page_render('auth2.html', form=form)
+
+
 def auth_handler():
-    key = input("Enter authentication code: ")
+    key = vk_auth()
     remember_device = True
     return key, remember_device
 
@@ -516,6 +525,7 @@ def auth():
             user.about = response[0]['status']
         user.avatar = f"{response[0]['crop_photo']['photo']['sizes'][-2]['url']}"
         user.name = f"{response[0]['first_name']} {response[0]['last_name']}"
+        user.vk_photo = True
         user.vk_id = response[0]['id']
         db_sess.commit()
         return redirect('/profile')
