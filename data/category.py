@@ -1,6 +1,5 @@
 import sqlalchemy
 from .db_session import SqlAlchemyBase
-from sqlalchemy_serializer import SerializerMixin
 
 
 association_table = sqlalchemy.Table(
@@ -13,7 +12,7 @@ association_table = sqlalchemy.Table(
 )
 
 
-class Category(SqlAlchemyBase, SerializerMixin):
+class Category(SqlAlchemyBase):
     __tablename__ = 'categorys'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)

@@ -1,13 +1,10 @@
 import vk_api
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 import random
 from data import db_session
 from data.users import User
 from data.quezes import Quezes
 import pymorphy2
-import json
-from flask_login import current_user
 
 TOKEN = ('vk1.a.iKxIo89g-nr1A5X_-fhiztJ7OCwMbuV2hugyx3t47_KDN5ZbNOe2NT8aw5dj5PHtqB9LbH2ZKMqcqLC8eWe'
          'nqmPSVfkaaoE7pD87NdwWXISA8eEu0fWoQWnvA16rx9ABQy6qu22uR6ZKyz3NAJ-cOADRatWut_6MTrC9w9_Y6r02'
@@ -22,7 +19,8 @@ def create_message(vk, event):
     name = vk.users.get(user_id=event.obj.message['from_id'], fields='first_name')[0]['first_name']
     if not is_member:
         vk.messages.send(user_id=event.obj.message['from_id'],
-                         message=f"Привет, {name}! Для использования бота нужно подписаться на группу👆",
+                         message=f"Привет, {name}! "
+                                 f"Для использования бота нужно подписаться на группу👆",
                          random_id=random.randint(0, 2 ** 64))
     else:
         db_sess = db_session.create_session()
@@ -77,3 +75,7 @@ def bot():
                 vk.messages.send(user_id=event.obj.message['from_id'],
                                  message=f"{vk.users.get(user_id=event.obj.message['from_id'], fields='first_name')[0]['first_name']}, я вас не понимаю. Вы можете узнать информацию об акааунте, написав 'инфо'",
                                  random_id=random.randint(0, 2 ** 64))
+
+
+if __name__ == '__main__':
+    bot()

@@ -1,10 +1,9 @@
 from .db_session import SqlAlchemyBase
 import sqlalchemy
 from sqlalchemy import orm
-from sqlalchemy_serializer import SerializerMixin
 
 
-class Questions(SqlAlchemyBase, SerializerMixin):
+class Questions(SqlAlchemyBase):
     __tablename__ = 'questions'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     image = sqlalchemy.Column(sqlalchemy.String, nullable=True)

@@ -1,5 +1,3 @@
-import os.path
-
 from import_manager import *
 
 app = Flask(__name__)
@@ -9,15 +7,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-def is_author(userid: int, quizid: int) -> bool:
-    sess = db_session.create_session()
-    quiz = sess.query(Quezes).get(quizid)
-    if userid == quiz.authorid or userid == 1:
-        sess.close()
-        return True
-    else:
-        sess.close()
-        return False
+# Сбор ошибок (не авторизован, страница не найдена, нет доступа)
+# и пересылание пользователя на нужные страницы.
 
 
 @app.errorhandler(401)
@@ -28,7 +19,7 @@ def get_login(error):
 @app.errorhandler(404)
 def not_found(error):
     if ('The requested URL was not found on the server. If you entered the URL manually please '
-        'check your spelling and try again.') == error.description:
+            'check your spelling and try again.') == error.description:
         return my_page_render('error_handler.html', message='WORK IN PROGRESS')
     else:
         return my_page_render('error_handler.html', message=error)
@@ -47,6 +38,10 @@ def load_user(user_id):
 
 @app.route('/')
 def mainpage():
+    """Главная страница сервера.
+    Тут отбираются квизы для таких разделов как:
+        -наиболее просматриваемые;
+        -квизы от тех на кого вы подписаны."""
     white_list = get_whitelist()
     if current_user.is_authenticated:
         followingid = [i.id for i in current_user.following]
@@ -59,11 +54,13 @@ def mainpage():
 
 @app.route('/all_quezes')
 def all_quezes():
+    """Страница со списком всех квизов"""
     return my_page_render('all_quezes.html', quezes=get_whitelist().all())
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Функция для регистрации"""
     form = RegisterForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -80,6 +77,9 @@ def register():
         login_user(user, remember=True)
         user.avatar = f'images/{current_user.id}/avatar.png'
         db_sess.commit()
+        # Пользователь сразу логинится, создается его папка галереи,
+        # получает аватар из папки static/images/default, если папка с его id уже существует
+        # (в случае удаления пользоваетля с таким же id из бд) она удаляется.
         if os.path.isdir(f'{os.curdir}/static/images/{current_user.id}'):
             shutil.rmtree(f"{os.curdir}/static/images/{current_user.id}")
         os.mkdir(f'static/images/{current_user.id}')
@@ -91,6 +91,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Функция авторизации на сайте"""
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -114,8 +115,11 @@ def logout():
 @app.route('/newquiz')
 @login_required
 def add_quiz(quizid=0):
+    """Главная функция сего проекта, создание квиза."""
     sess = db_session.create_session()
     if not quizid:
+        # Проверка на наличие у пользователя 'черновика',
+        # в случае отсутствия, генерирует uid и создает новый объект класса Quezes.
         draft = sess.query(Quezes.id).filter(Quezes.authorid == current_user.id,
                                              Quezes.publicated == 0).first()
         if draft:
@@ -131,6 +135,9 @@ def add_quiz(quizid=0):
         form = AddQuiz()
         quiz = sess.query(Quezes).get(quizid)
         if form.save.data:
+            # Функция сохранения 'черновика' квиза,
+            # для последующего изменения аватара/добавления вопроса
+            # или же чтобы сохранить на будущее.
             quiz.title = form.title.data
             quiz.description = form.description.data
             quiz.mode = form.mode.data
@@ -149,6 +156,7 @@ def add_quiz(quizid=0):
             sess.close()
             return redirect(f'/newquiz/{quizid}')
         if form.validate_on_submit():
+            # Функция окончательной валидации квиза и его публикация
             if not quiz.questions:
                 return my_page_render('add_quiz.html',
                                       form=form,
@@ -174,31 +182,33 @@ def add_quiz(quizid=0):
             sess.close()
             return redirect('/')
         if not quiz:
+            # Создание квиза при отсутствии черновика.
             quiz = Quezes(
                 id=quizid,
                 authorid=current_user.id
             )
             sess.add(quiz)
             sess.commit()
-        else:
-            form.title.data = quiz.title
-            form.description.data = quiz.description
-            form.pointsfge.data = quiz.pointsfge
-            form.goodend.data = quiz.goodend
-            form.badend.data = quiz.badend
-            if len(quiz.categories) > 0:
-                form.category1.data = str(quiz.categories[0].id)
-            if len(quiz.categories) > 1:
-                form.category2.data = str(quiz.categories[1].id)
-            if len(quiz.categories) > 2:
-                form.category3.data = str(quiz.categories[2].id)
+        # Загрузка данных из черновика.
+        form.title.data = quiz.title
+        form.description.data = quiz.description
+        form.pointsfge.data = quiz.pointsfge
+        form.goodend.data = quiz.goodend
+        form.badend.data = quiz.badend
+        if len(quiz.categories) > 0:
+            form.category1.data = str(quiz.categories[0].id)
+        if len(quiz.categories) > 1:
+            form.category2.data = str(quiz.categories[1].id)
+        if len(quiz.categories) > 2:
+            form.category3.data = str(quiz.categories[2].id)
         if not is_author(current_user.id, quizid):
-            sess.close()
             return abort(403, "It's not yours!!")
+        # Получение фото для работы dropdown с выбором обложки опроса.
         photos = []
         directory = f'static/images/{current_user.id}'
         for image in os.listdir(directory):
             photos.append({'url': f'{directory[7:]}/{image}', 'number': str(image)})
+        # Получение макс. значения range field.
         points = sum([i.koeff for i in quiz.questions])
         return my_page_render('add_quiz.html', form=form, quiz=quiz, photos=photos,
                               points=points)
@@ -206,6 +216,7 @@ def add_quiz(quizid=0):
 
 @app.route('/newquiz/<int:quizid>/select_cover/<photo>')
 def select_cover(quizid, photo):
+    """ Функция смены обложки. """
     if not is_author(current_user.id, quizid):
         return abort(403, "It's not yours!!")
     sess = db_session.create_session()
@@ -220,6 +231,9 @@ def select_cover(quizid, photo):
 @app.route('/delquiz/<int:quizid>', methods=['GET', 'POST'])
 @login_required
 def del_quiz(quizid):
+    """ Удаление квиза с подтверждением. """
+    if not is_author(current_user.id, quizid):
+        return abort(403, "It's not yours!!")
     if request.method == "POST":
         sess = db_session.create_session()
         sess.delete(sess.query(Quezes).get(quizid))
@@ -232,6 +246,7 @@ def del_quiz(quizid):
 @app.route('/newquiz/<int:quizid>/newquest', methods=['GET', 'POST'])
 @login_required
 def add_quest(quizid):
+    """Добавление вопроса к квизу."""
     form = AddQuest()
     if not is_author(current_user.id, quizid):
         return abort(403, "It's not yours!!")
@@ -274,6 +289,7 @@ def add_quest(quizid):
 @app.route('/newquiz/<int:quizid>/editquest/<int:questid>', methods=['GET', 'POST'])
 @login_required
 def edit_quest(quizid, questid):
+    """Изменение вопроса"""
     form = AddQuest()
     sess = db_session.create_session()
     if not is_author(current_user.id, quizid):
@@ -327,6 +343,7 @@ def edit_quest(quizid, questid):
 @app.route('/newquiz/<int:quizid>/delquest/<int:questid>')
 @login_required
 def del_quest(quizid, questid):
+    """Удаление вопроса"""
     if not is_author(current_user.id, quizid):
         return abort(403, "It's not yours!!")
     sess = db_session.create_session()
@@ -340,8 +357,9 @@ def del_quest(quizid, questid):
 
 @app.route('/quiz/<int:quizid>/info')
 def quizinfo(quizid):
+    """ Функция отображающая всю доступную информацию по квизу. """
     sess = db_session.create_session()
-    quiz = get_whitelist().filter(Quezes.id == quizid).first()
+    quiz = get_whitelist().get(quizid).first()
     if not quiz:
         return abort(404, f"Quiz {quizid} not found or it's private.")
     quiz = sess.query(Quezes).get(quizid)
@@ -350,6 +368,7 @@ def quizinfo(quizid):
 
 @app.route('/quiz/<int:quizid>', methods=["POST", "GET"])
 def quiz(quizid):
+    """ Прохождение квиза. """
     sess = db_session.create_session()
     quiz = get_whitelist().filter(Quezes.id == quizid).first()
     if not quiz:
@@ -366,6 +385,7 @@ def quiz(quizid):
         for i in range(len(quiz.questions)):
             points += (int(eval(f'quiz.questions[{i}].points{form[list(form.keys())[0]]}')) *
                        quiz.questions[i].koeff * 0.01)
+        # Неавторизованные пользователи не могут накручивать просмотры.
         if current_user.is_authenticated:
             quiz.passed += 1
         sess.commit()
@@ -375,6 +395,7 @@ def quiz(quizid):
 
 @app.route('/quiz/<int:quizid>/end/<float:points>')
 def end(quizid, points):
+    """ Выдача результата на основе полученных баллов за квиз."""
     sess = db_session.create_session()
     quiz = sess.query(Quezes).get(quizid)
     if not quiz:
@@ -388,6 +409,7 @@ def end(quizid, points):
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def my_profile():
+    """Функция для просмотра своего профиля"""
     sess = db_session.create_session()
     quizes = sess.query(Quezes).filter(Quezes.authorid == current_user.id).all()
     return my_page_render('my_profile.html', quizes=quizes)
@@ -395,15 +417,19 @@ def my_profile():
 
 @app.route('/profile/<int:userid>', methods=['GET', 'POST'])
 def profile(userid):
+    """Отображает профиль другого пользователя предварительно проверив его настройки приватности."""
     if current_user.is_authenticated and userid == current_user.id:
+        # Если usrid в url был ваш, то отправляет вас в ваш профиль.
         return redirect('/profile')
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     if not user:
         return abort(404, f'User {userid} not found')
     if user.is_private == 'True':
+        # 'True' означает полностью приватный профиль.
         return abort(403, "It's private")
     if user.is_private == 'NS':
+        # 'Ns' означает что к профилю доступ имеют те на кого ты подписан.
         if current_user.is_authenticated and current_user.id not in [i.id for i in user.following]:
             return abort(403, "It's private")
         if not current_user.is_autheticated:
@@ -411,6 +437,7 @@ def profile(userid):
         quizes = get_whitelist().filter(Quezes.authorid == user.id).all()
         is_friend = current_user.id in [i.id for i in user.followers]
         return my_page_render('profile.html', quizes=quizes, user=user, is_friend=is_friend)
+    # 'False' установленый по умолчанию означает полностью открытый профиль.
     quizes = get_whitelist().filter(Quezes.authorid == user.id).all()
     is_friend = current_user.is_authenticated and current_user.id in [i.id for i in user.followers]
     return my_page_render('profile.html', quizes=quizes, user=user, is_friend=is_friend)
@@ -419,9 +446,12 @@ def profile(userid):
 @app.route('/set_avatar', methods=['POST', 'GET'])
 @login_required
 def edit_avatar():
+    """ Функция смены аватара """
+    # Для edit_avatar и upload_photo используется одна форма.
     form = UploadPhoto()
     if form.validate_on_submit():
         form.image.data.save(f'static/images/{current_user.id}/preavatar.png')
+        # Вызов функции-обрезчика фото.
         make_avatar()
         os.remove(
             f'{os.curdir}/static/images/{current_user.id}/preavatar.png')
@@ -438,6 +468,7 @@ def edit_avatar():
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
+    """ Функция изменения данных о себе: возраста, имени, приватности и своего описания. """
     editform = EditProfileForm()
     if request.method == 'GET':
         db_sess = db_session.create_session()
@@ -467,6 +498,7 @@ def edit_profile():
 @app.route('/subscribe/<userid>')
 @login_required
 def subscribe(userid):
+    """ Функция добавления пользователя в свои подписки. """
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     user.followers.append(sess.query(User).get(current_user.id))
@@ -477,6 +509,7 @@ def subscribe(userid):
 @app.route('/unsubscribe/<userid>')
 @login_required
 def unsubscribe(userid):
+    """ Функция убирания пользователя из своих подписок. """
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     user.followers.remove(sess.query(User).get(current_user.id))
@@ -507,7 +540,7 @@ def auth():
         db_sess = db_session.create_session()
         users = db_sess.query(User).filter(User.vk_id == current_user.vk_id).all()
         if users and current_user.vk_id:
-            message = 'Пользователь уже существует'
+            message = 'Вы уже авторизованы'
             return my_page_render('vk_auth.html', form=form, message=message)
         user = db_sess.query(User).filter(User.id == current_user.id).first()
         login = form.login.data
@@ -534,10 +567,12 @@ def auth():
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
+    """ Функция поиска. """
     if request.method == 'GET':
         quest = request.args['field']
         quest_method = request.args.get('user', request.args.get('quiz'))
         sess = db_session.create_session()
+        # В зависимости от метода выдает разные типы данных.
         if quest_method == 'Юзер':
             users = sess.query(User).filter(User.name.like(f'%{quest}%'))
             if current_user.is_authenticated:
@@ -550,6 +585,7 @@ def search():
             return my_page_render('search.html', quest=quest, quest_method=quest_method,
                                   rez=users)
         if quest_method == 'Опрос':
+            # Тут также проверяется приватность квиза.
             quezes = get_whitelist().filter(Quezes.title.like(f'%{quest}%')).all()
             return my_page_render('search.html', quest=quest, quest_method=quest_method,
                                   quezes=quezes)
@@ -558,6 +594,7 @@ def search():
 @app.route('/album')
 @login_required
 def my_gallery():
+    """Функция отображения всех фото из вашей папки-галереи """
     urls = []
     directory = f'static/images/{current_user.id}'
     for image in os.listdir(directory):
@@ -568,10 +605,13 @@ def my_gallery():
 
 @app.route('/album/<int:userid>')
 def user_gallery(userid):
+    """Функция отображения фотографий другого пользователя"""
     if current_user.is_authenticated and userid == current_user.id:
+        # Если ваш id и id из url совпадают, пересылает на вашу галерею.
         return redirect('/album')
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
+    # Тут также проверяется приватность пользовательского аккаунта.
     if not user:
         return abort(404, f'User {userid} not found')
     if user.is_private == 'True':
@@ -592,10 +632,11 @@ def user_gallery(userid):
 @app.route('/upload_photo', methods=['GET', 'POST'])
 @login_required
 def upload_photo():
+    """ Загрузка фотографии в галерею """
     form = UploadPhoto()
     if form.validate_on_submit():
         last = os.listdir(f'static/images/{current_user.id}')[-1].split('.')[0]
-        print(last)
+        # Определяет номер последнего изображения и сохраняет новое с последующим номером
         if last != 'avatar':
             last = int(last)
         else:
@@ -613,12 +654,17 @@ def upload_photo():
 @app.route('/del_photo/<name>')
 @login_required
 def del_photo(name):
+    """Удаление фото по его имени в папке пользователя."""
     if os.path.isfile(f'static/images/{current_user.id}/{name}'):
-        os.remove(f'{os.curdir}/static/images/{current_user.id}/{name}')
+        try:
+            os.remove(f'{os.curdir}/static/images/{current_user.id}/{name}')
+        except Exception as ex:
+            return abort(404, ex)
         if name == 'avatar.png':
             shutil.copyfile(f"{os.curdir}/static/images/default/avatar.jpg",
                             f"{os.curdir}/static/images/{current_user.id}/avatar.png")
         sess = db_session.create_session()
+        # Всем квизам где использовалось фото присваивается стандартная обложка.
         quezes = sess.query(Quezes).filter(
             Quezes.cover == f'images/{current_user.id}/{name}').all()
         for quiz in quezes:
@@ -631,6 +677,7 @@ def del_photo(name):
 
 @app.route('/category/<int:catid>')
 def category(catid):
+    """ Все доступные квизы с категорией """
     sess = db_session.create_session()
     cat = sess.query(Category).get(catid)
     if not cat:
@@ -647,10 +694,12 @@ def category(catid):
 
 
 def main():
+    # connect to Database
     if not os.path.isdir("db"):
         os.mkdir("db")
     db_session.global_init('db/blogs.db')
     sess = db_session.create_session()
+    # set actuality ategories to AddQuiz form
     categories = [(0, '')]
     for cat in sess.query(Category).all():
         categories.append((cat.id, cat.name))
@@ -658,3 +707,7 @@ def main():
     AddQuiz.set_categories(categories)
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
+
+if __name__ == '__main__':
+    main()

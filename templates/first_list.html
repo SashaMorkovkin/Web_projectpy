@@ -41,8 +41,8 @@
         <div class="row flex-nowrap overflow-auto" style="border-top: 1px solid black">
             {% for quiz in by_friends %}
                 <div class="col" style="max-width: 19rem; padding-top: 0.2rem">
-                    <div class="card" style="width: 18rem; height: 400px">
-                        <img src="{{ url_for('static', filename=quiz.cover) }}" class="card-img-top" alt="Обложка">
+                    <div class="card" style="width: 18rem; max-height: 400px">
+                        <img src="{{ url_for('static', filename=quiz.cover) }}" class="card-img-top" alt="Обложка" style="overflow: hidden; align-self: center; max-width: min-content">
                         <div class="card-body">
                             <h5 class="card-title" style="white-space: nowrap; max-width: 17rem; overflow: hidden">{{ quiz.title }}</h5>
                             <div class="btn-group" role="group" style="width: 100%">

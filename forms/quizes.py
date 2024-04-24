@@ -5,6 +5,7 @@ from wtforms import (StringField, SubmitField, SelectField, TextAreaField, Integ
 
 
 class AddQuiz(FlaskForm):
+    ''' Форма для создания/редактирования квизов '''
     title = StringField('Название', validators=[DataRequired(), Length(max=70)])
     description = TextAreaField('Описание', validators=[Length(max=500)])
     mode = SelectField('Приватность',
@@ -22,12 +23,14 @@ class AddQuiz(FlaskForm):
     save = SubmitField('Сохранить')
 
     def set_categories(category: list):
+        ''' Функция устанавливающая категории в select field'ы '''
         AddQuiz.category1 = SelectField('Категория 1', choices=category)
         AddQuiz.category2 = SelectField('Категория 2', choices=category)
         AddQuiz.category3 = SelectField('Категория 3', choices=category)
 
 
 class AddQuest(FlaskForm):
+    ''' Форма для создания/редактирования вопросов '''
     title = StringField('Вопрос', validators=[DataRequired()])
     answer1 = StringField('Ответ1', validators=[DataRequired()])
     answer2 = StringField('Ответ2', validators=[DataRequired()])

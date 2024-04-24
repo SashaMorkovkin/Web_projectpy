@@ -1,10 +1,9 @@
 from .db_session import SqlAlchemyBase
 import sqlalchemy
 from sqlalchemy import orm
-from sqlalchemy_serializer import SerializerMixin
 
 
-class Quezes(SqlAlchemyBase, SerializerMixin):
+class Quezes(SqlAlchemyBase):
     __tablename__ = 'quezes'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)

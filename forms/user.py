@@ -5,6 +5,7 @@ from wtforms import FileField, TextAreaField, SelectField
 
 
 class LoginForm(FlaskForm):
+    ''' Форма авторизации '''
     email = EmailField('Email', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
@@ -12,6 +13,7 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
+    ''' Форма регистрации '''
     name = StringField('Никнейм', validators=[DataRequired()])
     email = EmailField('Электронная почта', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
@@ -22,6 +24,7 @@ class RegisterForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
+    ''' Форма изменения профиля '''
     name = StringField('Имя', validators=[DataRequired()])
     about = TextAreaField('Обо мне', validators=[Length(max=700)])
     age = IntegerField('Возраст', validators=[NumberRange(6, 99)])
