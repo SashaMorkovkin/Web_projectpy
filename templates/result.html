@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="purple-element">
+    {% if mode %}
+        <h1 style="text-align: center">{{ goodend }}</h1>
+        <img src="{{url_for('static', filename='images/default/good.png')}}" alt="УРА УРА УРА" width="100%">
+    {% else %}
+        <h1 style="text-align: center">{{ badend }}</h1>
+        <img src="{{url_for('static', filename='images/default/bad.png')}}" alt="картинка о том что ты не смог пройти тест" width="100%">
+    {% endif %}
+    <div class="alert alert-info">Очков набрано:{{points}}</div>
+    <a class="btn btn-menu" href="/" style="width:100%">На главную</a>
+</div>
+{% endblock %}

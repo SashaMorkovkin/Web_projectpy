@@ -1,10 +1,59 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="backgrounded-element">
+<form class="backgrounded-element" action="" method="post">
     <h2 style="text-align: center">{{ quiz.title }}</h2>
-    {% for quest in quiz.questions %}
-        <h3> {{quest.title}} </h3>
+    {% for i in range(quiz.questions|length) %}
+        <div class="container purple-element">
+        {% set quest=quiz.questions[i] %}
+        <h3 style="color: #e2ee83"> {{quest.title}} </h3>
+            <div class="row">
+                <div class="btn-group">
+                    <input class="form-check-input btn-check" type="radio" name="quest{{i}}" id="{{i}}answer-1" value="1">
+                    <label class="btn btn-succses" style="width: 100%" for="{{i}}answer-1">{{quest.answer1}}</label>
+                    <input class="form-check-input btn-check" type="radio" name="quest{{i}}" id="{{i}}answer-2" value="2">
+                    <label class="btn btn-succses" style="width: 100%" for="{{i}}answer-2">{{quest.answer2}}</label>
+                </div>
+            </div>
+            {% if quest.answer3 or quest.answer4%}
+                <div class="row">
+                    <div class="btn-group">
+                        {% if quest.answer3 %}
+                            <input class="form-check-input btn-check" type="radio" name="quest{{i}}" id="{{i}}answer-3" value="3">
+                            <label class="btn btn-succses" style="width: 100%" for="{{i}}answer-3">{{quest.answer3}}</label>
+                        {% endif %}
+                        {% if quest.answer4 %}
+                            <input class="form-check-input btn-check" type="radio" name="quest{{i}}" id="{{i}}answer-4" value="4">
+                            <label class="btn btn-succses" style="width: 100%" for="{{i}}answer-4">{{quest.answer4}}</label>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            {% if quest.answer5 or quest.answer6%}
+                <div class="row">
+                    <div class="btn-group">
+                        {% if quest.answer5 %}
+                            <input class="form-check-input btn-check" type="radio" name="quest{{i}}" id="{{i}}answer-5" value="5">
+                            <label class="btn btn-succses" style="width: 100%" for="{{i}}answer-5">{{quest.answer5}}</label>
+                        {% endif %}
+                        {% if quest.answer6 %}
+                            <input class="form-check-input btn-check" type="radio" name="quest{{i}}" id="{{i}}answer-6" value="6">
+                            <label class="btn btn-succses" style="width: 100%" for="{{i}}answer-6">{{quest.answer6}}</label>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     {% endfor %}
-</div>
+    {% if message %}
+        <div class="row">
+            <div class="alert alert-danger" style="text-align: center">
+                {{message}}
+            </div>
+        </div>
+    {% endif%}
+    <div class="row">
+        <button type="submit" class="btn btn-menu" id="submit">Узнать результат</button>
+    </div>
+</form>
 {% endblock %}

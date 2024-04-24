@@ -1,7 +1,6 @@
-from wtforms.validators import DataRequired, EqualTo, Length, NumberRange
+from wtforms.validators import DataRequired
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, EmailField, IntegerField
-from wtforms import FileField, TextAreaField, SelectField
+from wtforms import StringField, PasswordField, SubmitField
 
 
 class AuthForm(FlaskForm):
@@ -11,4 +10,6 @@ class AuthForm(FlaskForm):
 
 
 class Auth2(FlaskForm):
-    code = IntegerField('Код подтверждения', validators=[DataRequired()])
+    key = StringField('Ключ верификации (придёт на аторизированное устройство)',
+                      validators=[DataRequired()])
+    submit = SubmitField('Продолжить')

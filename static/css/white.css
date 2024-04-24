@@ -10,6 +10,19 @@
     padding: 20px;
 }
 
+*.purple-element {
+    font-color: #c583ee;
+    max-width: 100%;
+    border: 3px solid #c583ee;
+    border-radius: 10px;
+    background-color: #83adee;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 20px;
+}
+
 nav {
     background-color: #e2ee83
 }
@@ -45,6 +58,29 @@ body {
 *.btn.btn-succses:hover {
     background-color: #bfd833;
     border: 3px dashed #a2b827;
+}
+
+*.btn.btn-succses:active {
+    background-color: #c583ee;
+}
+
+*.btn-group>.btn-check:checked+.btn-succses{
+    background-color: #c583ee;
+    border: 3px dashed #a2b827;
+    color: #bfd833;
+    font-size: 1.2rem;
+}
+
+*.btn.btn-succses.subs{
+    width: 12rem;
+}
+
+*.btn.btn-succses.subs::before{
+    content: "Уже в подписках";
+}
+
+*.btn.btn-succses.subs:hover::before{
+    content: "Отписаться";
 }
 
 *.badge.category-badge {

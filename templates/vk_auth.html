@@ -26,6 +26,10 @@
             </div>
         </div>
     </div>
-    {{message}}
+    {% if message %}
+    <div class="alert alert-danger">
+        {{message}}
+    </div>
+    {% endif %}
 </form>
 {% endblock %}

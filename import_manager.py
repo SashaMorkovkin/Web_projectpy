@@ -10,7 +10,7 @@ from wtforms.validators import NumberRange
 
 import vk_api
 
-from forms.vk_auth import AuthForm
+from forms.vk_auth import AuthForm, Auth2
 from forms.user import LoginForm, RegisterForm, EditProfileForm
 from forms.quizes import AddQuest, AddQuiz
 from forms.search import Search
@@ -46,3 +46,19 @@ def make_avatar():
                 (height + min(image.size)) // 2)
     im1 = image.crop(cropsize)
     im1.save(f'{os.curdir}/{url_for("static", filename=f"images/{current_user.id}/avatar.png")}')
+
+
+def get_whitelist(session:bool=False):
+    sess = db_session.create_session()
+    if session:
+        return sess
+    if current_user.is_authenticated:
+        followersid = [i.id for i in current_user.followers]
+        white_list = sess.query(Quezes).filter(
+            (Quezes.publicated) &
+            ((Quezes.mode == 'forall') |
+             (Quezes.authorid == current_user.id) |
+             ((Quezes.authorid.in_(followersid)) & (Quezes.mode == 'forfriends'))))
+    else:
+        white_list = sess.query(Quezes).filter(Quezes.publicated & (Quezes.mode == 'forall'))
+    return white_list

@@ -32,15 +32,15 @@
                 </a>
                 <ul class="dropdown-menu">
                     {% for cat in categories %}
-                        <li><a class="dropdown-item" href="/{{cat.id}}">{{ cat.name }}</a></li>
+                        <li><a class="dropdown-item" href="/category/{{cat.id}}">{{ cat.name }}</a></li>
                     {% endfor %}
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">пукпук🐷</a></li>
+                    <li><h5 class="dropdown-item">пукпук🐷</h5></li>
                 </ul>
             </li>
             <form class="d-flex" role="search" style="margin-left: 1%" action="/search">
                 {{search.field(class="form-control", style="margin-right: 2px !important; min-width: 200px", placeholder="Поиск")}}
-                <div class="btn-group-vertical" role="group" aria-label="Basic example">
+                <div class="btn-group-vertical" role="group">
                     {{ search.user(class="btn btn-menu", style="height: 30px; font-size: 10px;padding-top: 0.4rem; font-weight: bold;") }}
                     {{ search.quiz(class="btn btn-menu", style="height: 30px; font-size: 10px;padding-top: 0.4rem; font-weight: bold;") }}
                 </div>
@@ -67,6 +67,16 @@
 </main>
 </body>
 <footer style="background-color: #4d4d4d; min-height: 100px; color: white">
-    <h1>Спасибо!</h1>
+    <div class="row" style="padding-top: 10px; max-width:100%; text-align: center">
+        <div class="col">
+            <h3>Спасибо!</h3>
+        </div>
+        <div class="col">
+            <a class="btn btn-info" href="http://vk.com/iquiz1" target="_blank">Сообщество в VK</a>
+        </div>
+    </div>
+    <div class="row" style="padding-top: 10px; max-width:100%; text-align: center">
+        <h5>Сайт разработали Акишев Андрей и Морковкин Александр специально для Яндекс Лицея</h5>
+    </div>
 </footer>
 </html>

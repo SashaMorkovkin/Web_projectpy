@@ -2,8 +2,48 @@
 
 {% block content %}
 {% if user.id == current_user.id %}
-    <h1>Моя галерея</h1>
-    <a class="btn btn-success" href="/upload_photo">Загрузить фото</a>
+    <div class="row">
+        <div class="col">
+            <h1>Моя галерея</h1>
+        </div>
+        <div class="col" style="text-align: right">
+            <a class="btn btn-success" href="/upload_photo" style="margin-top: 1rem">Загрузить фото</a>
+        </div>
+    </div>
+    {% if urls %}
+        <div class="container">
+            {% for i in range(urls|length // 4 + 1) %}
+                <div class="row align-items-left">
+                    {% for source in urls[i * 4: (i + 1) * 4] %}
+                        <div class="col align-self-start" style="text-align: center; width: 20%; height: 300px">
+                            <div class="alert alert-light" style="width: 232px">
+                                <div class="container" style="margin: 0 0 0 0; padding: 0 0 0 0">
+                                    <div class="row align-items-center" style="height: 200px">
+                                        <div class="col" style="padding-top: auto">
+                                            <img src="{{ source['img'] }}" style="max-width: 200px; max-height: 200px">
+                                        </div>
+                                    </div>
+                                    <div class="btn-group" style="margin-top: 10px; width: 100%">
+                                        <a class="btn btn-success" href="../../{{ source['img'] }}" download>🡻</a>
+                                        <a class="btn btn-danger" href="/del_photo/{{ source['number'] }}">✖</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% for i in range(4 - urls[i * 4: (i + 1) * 4]|length ) %}
+                        <div class="col align-self-start" style="text-align: left; width: 25%"></div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-light" role="alert">
+            Ваша галерея пуста
+        </div>
+    {% endif %}
+{% else %}
+    <h1>Галерея {{ user.name }}</h1>
     {% if urls %}
         <div class="container">
             {% for i in range(urls|length // 4 + 1) %}
@@ -17,33 +57,21 @@
                                             <img src="{{ source }}" style="max-width: 200px; max-height: 200px">
                                         </div>
                                     </div>
-                                    <div class="row align-items-center" style="margin-top: 10px">
-                                        <div class="col" style="padding-left: 1%; padding-right: 1%">
-                                            <a class="btn btn-primary" href="/set_avatar/{{source}}" style="width: -webkit-fill-available">㋡‍️</a>
-                                        </div>
-                                        <div class="col" style="padding-left: 1%; padding-right: 1%">
-                                            <a class="btn btn-success" href="../../{{source}}" download style="width: -webkit-fill-available">🡻</a>
-                                        </div>
-                                        <div class="col" style="padding-left: 1%; padding-right: 1%">
-                                            <a class="btn btn-danger" href="/delete{{source}}" style="width: -webkit-fill-available">✖</a>
-                                        </div>
-                                    </div>
+                                    <a class="btn btn-success" href="../../{{ source }}" style="margin-top: 10px; width: 100%" download>🡻</a>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                     {% for i in range(4 - urls[i * 4: (i + 1) * 4]|length ) %}
-                        <div class="col align-self-start" style="text-align: left; width: 20%"></div>
+                        <div class="col align-self-start" style="text-align: left; width: 25%"></div>
                     {% endfor %}
                 </div>
             {% endfor %}
         </div>
     {% else %}
         <div class="alert alert-light" role="alert">
-            Ваша галерея пуста
+            Тут пусто.
         </div>
     {% endif %}
-{% else %}
-пук
 {% endif %}
 {% endblock %}

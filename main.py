@@ -1,5 +1,6 @@
-from import_manager import *
+import os.path
 
+from import_manager import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -24,6 +25,20 @@ def get_login(error):
     return redirect('/login')
 
 
+@app.errorhandler(404)
+def not_found(error):
+    if ('The requested URL was not found on the server. If you entered the URL manually please '
+            'check your spelling and try again.') == error.description:
+        return my_page_render('error_handler.html', message='WORK IN PROGRESS')
+    else:
+        return my_page_render('error_handler.html', message=error)
+
+
+@app.errorhandler(403)
+def not_found(error):
+    return my_page_render('error_handler.html', message=error)
+
+
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -32,22 +47,19 @@ def load_user(user_id):
 
 @app.route('/')
 def mainpage():
-    sess = db_session.create_session()
+    white_list = get_whitelist()
     if current_user.is_authenticated:
-        followersid = [i.id for i in current_user.followers]
-        white_list = sess.query(Quezes).filter(
-            (Quezes.publicated) &
-            ((Quezes.mode == 'forall') |
-             (Quezes.authorid == current_user.id) |
-             (( Quezes.authorid.in_(followersid) ) & (Quezes.mode == 'forfriends'))))
-        followingsid = [i.id for i in current_user.following]
-        by_friends = white_list.filter(Quezes.authorid.in_(followingsid))
+        followingid = [i.id for i in current_user.following]
+        by_friends = white_list.filter(Quezes.authorid.in_(followingid))
     else:
-        white_list = sess.query(Quezes).filter(Quezes.publicated & (Quezes.mode == 'forall'))
         by_friends = []
-    most_passed = white_list.order_by(Quezes.passed).limit(10).all()
-    sess.close()
+    most_passed = white_list.order_by(Quezes.passed.desc()).limit(10).all()
     return my_page_render('first_list.html', most_passed=most_passed, by_friends=by_friends)
+
+
+@app.route('/all_quezes')
+def all_quezes():
+    return my_page_render('all_quezes.html', quezes=get_whitelist().all())
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -86,7 +98,6 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
-        db_sess.close()
         return my_page_render('login.html', message="Неправильный логин или пароль",
                               form=form)
     return my_page_render('login.html', form=form)
@@ -204,7 +215,6 @@ def select_cover(quizid, photo):
         sess.commit()
         sess.close()
         return redirect(f'/newquiz/{quizid}')
-
 
 
 @app.route('/delquiz/<int:quizid>', methods=['GET', 'POST'])
@@ -331,36 +341,90 @@ def del_quest(quizid, questid):
 @app.route('/quiz/<int:quizid>/info')
 def quizinfo(quizid):
     sess = db_session.create_session()
-    quiz = sess.query(Quezes).get(quizid)
+    quiz = get_whitelist().filter(Quezes.id == quizid).first()
     if not quiz:
-        return abort(404, f'Quiz {quizid} not found.')
+        return abort(404, f"Quiz {quizid} not found or it's private.")
+    quiz = sess.query(Quezes).get(quizid)
     return my_page_render('quizinfo.html', quiz=quiz)
 
 
 @app.route('/quiz/<int:quizid>', methods=["POST", "GET"])
 def quiz(quizid):
     sess = db_session.create_session()
+    quiz = get_whitelist().filter(Quezes.id == quizid).first()
+    if not quiz:
+        return abort(404, f"Quiz {quizid} not found or it's private.")
+    quiz = sess.query(Quezes).get(quizid)
+    if request.method == "POST":
+        form = dict(request.form)
+        points = 0
+        if len(form) != len(quiz.questions):
+            return my_page_render('quiz.html',
+                                  quiz=quiz,
+                                  message='Вы не ответили на все вопросы. ОТВЕЧАЙТЕ ПО НОВОЙ БУГАГА'
+                                  )
+        for i in range(len(quiz.questions)):
+            points += (int(eval(f'quiz.questions[{i}].points{form[list(form.keys())[0]]}')) *
+                       quiz.questions[i].koeff * 0.01)
+        if current_user.is_authenticated:
+            quiz.passed += 1
+        sess.commit()
+        return redirect(f'/quiz/{quizid}/end/{points}')
+    return my_page_render('quiz.html', quiz=quiz)
+
+
+@app.route('/quiz/<int:quizid>/end/<float:points>')
+def end(quizid, points):
+    sess = db_session.create_session()
     quiz = sess.query(Quezes).get(quizid)
     if not quiz:
         return abort(404, f'Quiz {quizid} not found.')
-    return my_page_render('quiz.html', quiz=quiz)
-
+    if points >= quiz.pointsfge:
+        return my_page_render('result.html', mode=True, points=points, goodend=quiz.goodend)
+    else:
+        return my_page_render('result.html', mode=False, points=points, badend=quiz.badend)
 
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def my_profile():
-    return my_page_render('my_profile.html')
+    sess = db_session.create_session()
+    quizes = sess.query(Quezes).filter(Quezes.authorid == current_user.id).all()
+    return my_page_render('my_profile.html', quizes=quizes)
+
+
+@app.route('/profile/<int:userid>', methods=['GET', 'POST'])
+def profile(userid):
+    if current_user.is_authenticated and userid == current_user.id:
+        return redirect('/profile')
+    sess = db_session.create_session()
+    user = sess.query(User).get(userid)
+    if not user:
+        return abort(404, f'User {userid} not found')
+    if user.is_private == 'True':
+        return abort(403, "It's private")
+    if user.is_private == 'NS':
+        if current_user.is_authenticated and current_user.id not in [i.id for i in user.following]:
+            return abort(403, "It's private")
+        if not current_user.is_autheticated:
+            return abort(403, "It's private")
+        quizes = get_whitelist().filter(Quezes.authorid == user.id).all()
+        is_friend = current_user.id in [i.id for i in user.followers]
+        return my_page_render('profile.html', quizes=quizes, user=user, is_friend=is_friend)
+    quizes = get_whitelist().filter(Quezes.authorid == user.id).all()
+    is_friend = current_user.is_authenticated and current_user.id in [i.id for i in user.followers]
+    return my_page_render('profile.html', quizes=quizes, user=user, is_friend=is_friend)
 
 
 @app.route('/set_avatar', methods=['POST', 'GET'])
+@login_required
 def edit_avatar():
     form = UploadPhoto()
     if form.validate_on_submit():
         form.image.data.save(f'static/images/{current_user.id}/preavatar.png')
         make_avatar()
         os.remove(
-            f'{os.curdir}/{f"static/images/{current_user.id}/preavatar.png"}')
+            f'{os.curdir}/static/images/{current_user.id}/preavatar.png')
         sess = db_session.create_session()
         user = sess.get(User, current_user.id)
         user.avatar = f'images/{current_user.id}/avatar.png'
@@ -381,6 +445,7 @@ def edit_profile():
             editform.name.data = user.name
             editform.about.data = user.about
             editform.age.data = user.age
+            editform.is_private.data = user.is_private
         else:
             abort(404, 'Unknown found your profile')
     if editform.validate_on_submit():
@@ -390,6 +455,7 @@ def edit_profile():
             user.name = editform.name.data
             user.about = editform.about.data
             user.age = editform.age.data
+            user.is_private = editform.is_private.data
             db_sess.commit()
             return redirect('/profile')
         else:
@@ -397,15 +463,24 @@ def edit_profile():
     return my_page_render('edit_profile.html', form=editform)
 
 
-@login_required
 @app.route('/subscribe/<userid>')
+@login_required
 def subscribe(userid):
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     user.followers.append(sess.query(User).get(current_user.id))
-    print(current_user.following)
     sess.commit()
-    return redirect('/')
+    return redirect(f'/profile/{userid}')
+
+
+@app.route('/unsubscribe/<userid>')
+@login_required
+def unsubscribe(userid):
+    sess = db_session.create_session()
+    user = sess.query(User).get(userid)
+    user.followers.remove(sess.query(User).get(current_user.id))
+    sess.commit()
+    return redirect(f'/profile/{userid}')
 
 
 def auth_handler():
@@ -455,12 +530,19 @@ def search():
         sess = db_session.create_session()
         if quest_method == 'Юзер':
             users = sess.query(User).filter(User.name.like(f'%{quest}%'))
+            if current_user.is_authenticated:
+                users = [{'user': i,
+                          'is_friend': current_user.id in [j.id for j in i.followers]}
+                         for i in users]
+                users.sort(key=lambda x: -x['is_friend'])
+            else:
+                users = [{'user': i} for i in users]
             return my_page_render('search.html', quest=quest, quest_method=quest_method,
                                   rez=users)
         if quest_method == 'Опрос':
-            quizes = sess.query(Quezes).filter(Quezes.title.like(f'%{quest}%'))
+            quezes = get_whitelist().filter(Quezes.title.like(f'%{quest}%')).all()
             return my_page_render('search.html', quest=quest, quest_method=quest_method,
-                                  rez=quizes)
+                                  quezes=quezes)
 
 
 @app.route('/album')
@@ -469,7 +551,8 @@ def my_gallery():
     urls = []
     directory = f'static/images/{current_user.id}'
     for image in os.listdir(directory):
-        urls.append(url_for('static', filename=f'{directory[7:]}/{image}'))
+        urls.append({'img': url_for('static', filename=f'{directory[7:]}/{image}'),
+                     'number': image})
     return my_page_render('album.html', urls=urls, user=current_user)
 
 
@@ -480,7 +563,14 @@ def user_gallery(userid):
     sess = db_session.create_session()
     user = sess.query(User).get(userid)
     if not user:
-        return abort(404, 'unknown user id')
+        return abort(404, f'User {userid} not found')
+    if user.is_private == 'True':
+        return abort(403, "It's private")
+    if user.is_private == 'NS':
+        if current_user.is_authenticated and current_user.id not in [i.id for i in user.following]:
+            return abort(403, "It's private")
+        if not current_user.is_autheticated:
+            return abort(403, "It's private")
     urls = []
     directory = f'static/images/{userid}'
     if os.path.isdir(directory):
@@ -508,6 +598,42 @@ def upload_photo():
         form.image.data.save(f'static/images/{current_user.id}/{last + 1}.png')
         return redirect('/album')
     return my_page_render('upload.html', form=form, mode='в альбом')
+
+
+@app.route('/del_photo/<name>')
+@login_required
+def del_photo(name):
+    if os.path.isfile(f'static/images/{current_user.id}/{name}'):
+        os.remove(f'{os.curdir}/static/images/{current_user.id}/{name}')
+        if name == 'avatar.png':
+            shutil.copyfile(f"{os.curdir}/static/images/default/avatar.jpg",
+                            f"{os.curdir}/static/images/{current_user.id}/avatar.png")
+        sess = db_session.create_session()
+        quezes = sess.query(Quezes).filter(
+            Quezes.cover == f'images/{current_user.id}/{name}').all()
+        for quiz in quezes:
+            quiz.cover = 'images/default/cover.png'
+        sess.commit()
+        return redirect('/album')
+    else:
+        return abort(404, 'File not found')
+
+
+@app.route('/category/<int:catid>')
+def category(catid):
+    sess = db_session.create_session()
+    cat = sess.query(Category).get(catid)
+    if not cat:
+        return abort(404, f'Category {catid} not found')
+    else:
+        quezes = []
+        prequezes = get_whitelist().all()
+        print(prequezes)
+        for quiz in prequezes:
+            ids = [i.id for i in quiz.categories]
+            if cat.id in ids:
+                quezes.append(quiz)
+        return my_page_render('category.html', quezes=quezes, cat=cat)
 
 
 def main():

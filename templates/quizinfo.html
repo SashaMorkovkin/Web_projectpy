@@ -4,14 +4,14 @@
 <div class="backgrounded-element">
     <h2 style="text-align: center">{{ quiz.title }}</h2>
     <div class="row">
-        <div class="col" style="max-width: 30%">
-            <img src="{{url_for('static', filename=quiz.cover)}}" alt="Обложка" style="max-width: 100%; border: 3px solid #a2b827; padding: 0 0 0 0">
+        <div class="col" style="max-width: 25rem; max-height: 25rem; text-align: center">
+            <img src="{{url_for('static', filename=quiz.cover)}}" alt="Обложка" style="max-width: 100%; max-height: 100%; border: 3px solid #a2b827; padding: 0 0 0 0">
         </div>
         <div class="col">
             <div style="height: 90%">
                 <h4>
                 {% for cat in quiz.categories %}
-                    <a href="/{{cat.id}}" class="badge category-badge rounded-pill">{{ cat.name }}</a>
+                    <a href="/category/{{cat.id}}" class="badge category-badge rounded-pill">{{ cat.name }}</a>
                 {% endfor %}
                 </h4>
                 <h5>Пройден: {{ quiz.passed }} раз</h5>
