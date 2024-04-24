@@ -19,7 +19,7 @@ def get_login(error):
 @app.errorhandler(404)
 def not_found(error):
     if ('The requested URL was not found on the server. If you entered the URL manually please '
-            'check your spelling and try again.') == error.description:
+        'check your spelling and try again.') == error.description:
         return my_page_render('error_handler.html', message='WORK IN PROGRESS')
     else:
         return my_page_render('error_handler.html', message=error)

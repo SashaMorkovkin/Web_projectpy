@@ -8,23 +8,23 @@
     <h6>{{ form.login.label }}</h6>
     {{form.login(class="form-control")}}<br>
     {% for error in form.login.errors %}
-        <p class="alert-danger" role="alert">
-            {{error}}
-        </p>
+    <p class="alert-danger" role="alert">
+        {{error}}
+    </p>
     {% endfor %}
     <h6>{{form.password.label}}</h6>
     {{form.password(class="form-control", type="password")}}<br>
     {% for error in form.password.errors %}
-        <p class="alert-danger" role="alert">
-            {{error}}
-        </p>
+    <p class="alert-danger" role="alert">
+        {{error}}
+    </p>
     {% endfor %}
     <h6>{{form.code.label}}</h6>
     {{form.code(class="form-control")}}<br>
     {% for error in form.code.errors %}
-        <p class="alert-danger" role="alert">
-            {{error}}
-        </p>
+    <p class="alert-danger" role="alert">
+        {{error}}
+    </p>
     {% endfor %}
     <div class="container">
         <div class="row align-items-center">
