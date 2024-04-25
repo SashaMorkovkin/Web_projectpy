@@ -359,7 +359,7 @@ def del_quest(quizid, questid):
 def quizinfo(quizid):
     """ Функция отображающая всю доступную информацию по квизу. """
     sess = db_session.create_session()
-    quiz = get_whitelist().get(quizid).first()
+    quiz = get_whitelist().filter(Quezes.id == quizid)
     if not quiz:
         return abort(404, f"Quiz {quizid} not found or it's private.")
     quiz = sess.query(Quezes).get(quizid)
